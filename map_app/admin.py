@@ -1,5 +1,8 @@
 from django.contrib import admin
+from .models import Species, Grid, Results
 
-# Register your models here.
-
+# Database models
+admin.site.register(Species)
+admin.site.register(Grid)
+admin.site.register(Results)
  
