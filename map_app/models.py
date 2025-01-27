@@ -1,5 +1,7 @@
+# Alyssa, Payton
+
 from django.db import models
-#need this to work
+
 # Bird Species Model
 class Species(models.Model):
     speciesID = models.IntegerField(unique = True)
