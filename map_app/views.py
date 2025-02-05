@@ -5,4 +5,12 @@ from django.http import HttpResponse
 
 
 def index(request):
-    return HttpResponse("Hello, world. This is the new code to display.")
+    index_page = "index.html"
+
+    return render(request, index_page)
+
+
+def map(request):
+    map_page = "map.html"
+
+    return render(request, map_page)
