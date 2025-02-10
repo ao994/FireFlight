@@ -14,3 +14,7 @@ def map(request):
     map_page = "map.html"
 
     return render(request, map_page)
+
+def enchanted_circle_map(request):
+    
+    return render(request, 'enchanted_circle_map.html')
