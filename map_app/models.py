@@ -8,6 +8,10 @@ class Species(models.Model):
     species = models.CharField(max_length=200)
     birdcode = models.CharField(max_length=10)
 
+    #ordering of birds
+    class Meta:
+        ordering = ['species']
+
 #Grid Model
 class Grid(models.Model):
     OID = models.IntegerField(unique = True)
