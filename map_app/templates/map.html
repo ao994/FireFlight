@@ -12,31 +12,43 @@
     <iframe width="425" height="350" src="https://www.openstreetmap.org/export/embed.html?bbox=-117.93196678161623%2C33.80619926145449%2C-117.90898561477663%2C33.821067939638574&amp;layer=mapnik" style="border: 1px solid black"></iframe>
     
     <br/>
-    <div class="d-flex justify-content">
-      <div class="dropdown">
-        <a href="https://www.openstreetmap.org/#map=16/33.81363/-117.92048" class = "btn btn-secondary">
-          View Larger Map</a>
-        <a href="/map" class="btn btn-secondary">
-          Refresh
-        </a>
-        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown">
-          Lands
-        </button>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-          <a class="dropdown-item" href="#">TomorrowLand</a>
-          <a class="dropdown-item" href="#">AdventureLand</a>
-          <a class="dropdown-item" href="#">FantasyLand</a>
-          <a class="dropdown-item" href="#">Galaxy's Edge</a>
-          <a class="dropdown-item" href="#">ToonTown</a>
-          <a class="dropdown-item" href="#">New Orleans Square</a>
-          <a class="dropdown-item" href="#">Critter Country</a>
-        </div>
-  
-      </div>
-    </div>
-    
 
-  </div>
+    <small>
+        <a href="https://www.openstreetmap.org/#map=16/33.81363/-117.92048">View Larger Map</a>
+    </small>
+
+    <div class="d-flex justify-content-center">
+
+            <a href="/map" class="btn btn-secondary mx-1">
+            Refresh
+            </a>
+
+            <button class="btn btn-secondary mx-1">
+                Export Data
+            </button>
+
+            <button class="btn btn-secondary dropdown-toggle mx-1" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                Bird Species
+            </button>
+           
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" >
+                <div class="list-group" style="height: 30vh; overflow-y: scroll;">
+                    
+                    {% for bird in birds %}
+                    
+                    <label class="list-group-item">
+                        <input class="form-check-input me-1" type="checkbox" value=" {{bird.speciesID}} ">
+                        {{bird.species}}
+                    </label>  
+                
+                    {% endfor %}
+
+                </div>
+            </div>
+  
+
+
+    </div>
     
 </div>
 
