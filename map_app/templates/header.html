@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -14,8 +15,8 @@
     <title>{% block title %} {% endblock %}</title>
 
     <!-- CSS stylesheet reference -->
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'style.css' %}">
+ 
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
     
     <!-- load favicon -->
     <link rel="icon" type="image/png" href="{% static 'images/FireFlight_logo_only.png' %}">
