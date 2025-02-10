@@ -23,3 +23,7 @@ def map(request):
         #gets all the birds
         birds = Species.objects.all()
         return render(request, map_page, {'birds': birds})
+
+def enchanted_circle_map(request):
+    
+    return render(request, 'enchanted_circle_map.html')
