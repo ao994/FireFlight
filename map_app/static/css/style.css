@@ -1,0 +1,39 @@
+body {
+    margin: 0;
+    padding: 0;
+
+    color:black;
+    background-image: url("/static/images/main_photo.jpg");
+    background-position:center;
+    background-repeat: no-repeat;
+    text-align: center;
+
+}
+small{
+    display: flex;
+}
+
+nav{
+    background-image:linear-gradient(gray, white);
+    font-size: large;
+} 
+h1{
+    text-align: center;
+    color:crimson;
+    background: rgba(255,255,255,0.5);
+}
+
+p{
+    position: relative;
+    margin: 5% auto;
+    width: 700px; 
+    font-size: larger;
+    background: rgba(255,255,255,0.5);
+    border-radius: 2px;      
+}
+iframe{
+    display:flex ;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}

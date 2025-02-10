@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -14,11 +15,11 @@
     <title>{% block title %} {% endblock %}</title>
 
     <!-- CSS stylesheet reference -->
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'style.css' %}">
+ 
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
     
     <!-- load favicon -->
-    <link rel="icon" type="image/png" href="{% static 'images/FireFlight_logo_only.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'images/FireFlight_logo.PNG' %}">
 
 </head>
 
@@ -28,7 +29,7 @@
 
             <div class="navbar-brand">
                 <a href="/">
-                    <img src="{% static 'images/FireFlight_logo_only.png' %}" alt="FireFlight logo" width="100" height="100">
+                    <img src="{% static 'images/FireFlight_logo.PNG' %}" alt="FireFlight logo" width="100" height="100">
                 </a>
             </div>
 
