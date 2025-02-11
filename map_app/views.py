@@ -2,6 +2,7 @@
 
 from django.shortcuts import render
 from django.http import HttpResponse
+from csp.decorators import csp_exempt
 
 from .models import Species, Grid, Results
 
@@ -13,7 +14,7 @@ def index(request):
     if request.method == "GET":  
         return render(request, index_page)
 
-
+@csp_exempt
 def map(request):
     #set page to load
     map_page = "map.html"
@@ -24,6 +25,7 @@ def map(request):
         birds = Species.objects.all()
         return render(request, map_page, {'birds': birds})
 
+@csp_exempt
 def enchanted_circle_map(request):
     
     return render(request, 'enchanted_circle_map.html')
