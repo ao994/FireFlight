@@ -48,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CSPMiddleware',
 ]
 
 ROOT_URLCONF = 'mysite.urls'
@@ -70,6 +71,31 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mysite.wsgi.application'
 
+#CSP config
+#add ANY outside scripts/links that must be loaded
+CSP_DEFAULT_SRC = \
+        ("'self'", 
+        "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css", 
+        "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js", 
+        "https://code.jquery.com/jquery-3.6.0.js", 
+        "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js",
+        "https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js", 
+        "https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js", 
+        "https://code.jquery.com/jquery-3.7.1.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js",
+        "https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js",
+        "https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css",
+        "https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css",
+        "https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css",
+        "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css",
+        "https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css",
+        "https://tile.openstreetmap.org/*",
+        "https://www.openstreetmap.org/*")
+CSP_FRAME_ANCESTORS = CSP_DEFAULT_SRC
+
+#X frame blocking
+X_FRAME_OPTIONS = "SAMEORIGIN"
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
