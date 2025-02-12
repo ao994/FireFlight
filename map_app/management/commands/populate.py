@@ -62,7 +62,6 @@ class Command(BaseCommand):
                     
                     # if grid file
                     case "ï»¿OID_":
-                        print("yoyoyo")
                         # go through data line by line
                         for line in csvreader:
                             # get the OID
