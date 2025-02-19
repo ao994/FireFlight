@@ -61,8 +61,7 @@ class Command(BaseCommand):
                                 print(f'{e}')
                     
                     # if grid file
-                    case "ï»¿OID_":
-                        print("yoyoyo")
+                    case "ï»¿OID_" | "OID_" | "\ufeffOID_":
                         # go through data line by line
                         for line in csvreader:
                             # get the OID
@@ -185,7 +184,11 @@ class Command(BaseCommand):
                                 obj.save()
                             except Exception as e:
                                 print(f'{e}')
+                    #case of failure to recognize file
+                    case _:
+                        print(f'Error: First column name of file not recognized.')
 
+            #this also prints in failure: need to change            
             self.stdout.write(self.style.SUCCESS(f'Database populated successfully from {filePath}!'))
 
         # if file inaccessible, return an error

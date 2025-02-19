@@ -7,17 +7,18 @@
 {% block body %}
 {% load static %}
 
-
-<div class = "col-md-6 mx-auto">
-    <iframe width="425" height="350" src="https://www.openstreetmap.org/export/embed.html?bbox=-117.93196678161623%2C33.80619926145449%2C-117.90898561477663%2C33.821067939638574&amp;layer=mapnik" style="border: 1px solid black"></iframe>
+<div class = "col-md mx-auto">
+    
+    <div class="d-flex justify-content-center">
+        <iframe width="850" height="500" src="/enchanted-circle-map" style="border: 1px solid black"></iframe>
+    </div>
+    
     
     <br/>
 
-    <small>
-        <a href="https://www.openstreetmap.org/#map=16/33.81363/-117.92048">View Larger Map</a>
-    </small>
-
     <div class="d-flex justify-content-center">
+
+        <a href="/enchanted-circle-map" class="btn btn-secondary mx-1">View Larger Map</a>
 
             <a href="/map" class="btn btn-secondary mx-1">
             Refresh
@@ -27,10 +28,11 @@
                 Export Data
             </button>
 
+
             <button class="btn btn-secondary dropdown-toggle mx-1" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                 Bird Species
             </button>
-           
+            
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" >
                 <div class="list-group" style="height: 30vh; overflow-y: scroll;">
                     
@@ -45,6 +47,8 @@
 
                 </div>
             </div>
+
+            
   
 
 

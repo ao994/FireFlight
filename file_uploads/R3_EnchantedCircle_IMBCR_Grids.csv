@@ -1,0 +1,51 @@
+﻿OID_,Grid_ID,Grid_E_NAD83,Grid_N_NAD83,UTM_Zone,Grid_Lat_NAD83,Grid_Long_NAD83,BCR,MgmtEntity,MgmtRegion,MgmtUnit,MgmtDistrict,County,State,PriorityLandscape,inPL
+1,NM-CARSON-LE1,388500,4091500,13,36.96299337,-106.2525113,16,US Forest Service,USFS Region 3,Carson National Forest,Tres Piedras Ranger District,Rio Arriba,NM,Enchanted Circle,0
+2,NM-CARSON-LE10,350500,4035500,13,36.45310737,-106.6682849,16,US Forest Service,USFS Region 3,Carson National Forest,Canjilon Ranger District,Rio Arriba,NM,Enchanted Circle,0
+3,NM-CARSON-LE11,442500,4045500,13,36.55318852,-105.6424974,16,US Forest Service,USFS Region 3,Carson National Forest,Questa Ranger District,Taos,NM,Enchanted Circle,1
+4,NM-CARSON-LE12,393500,4016500,13,36.28759415,-106.1859532,16,US Forest Service,USFS Region 3,Carson National Forest,El Rito Ranger District,Rio Arriba,NM,Enchanted Circle,0
+5,NM-CARSON-LE13,489500,4068500,13,36.76220519,-105.1176439,16,US Forest Service,USFS Region 3,Carson National Forest,Questa Ranger District,Colfax,NM,Enchanted Circle,1
+6,NM-CARSON-LE14,375500,4028500,13,36.39359183,-106.3882653,16,US Forest Service,USFS Region 3,Carson National Forest,Canjilon Ranger District,Rio Arriba,NM,Enchanted Circle,0
+7,NM-CARSON-LE15,399500,4051500,13,36.60371197,-106.1236915,16,US Forest Service,USFS Region 3,Carson National Forest,El Rito Ranger District,Rio Arriba,NM,Enchanted Circle,0
+8,NM-CARSON-LE16,409500,4014500,13,36.27120021,-106.0075771,16,US Forest Service,USFS Region 3,Carson National Forest,Tres Piedras Ranger District,Rio Arriba,NM,Enchanted Circle,0
+9,NM-CARSON-LE17,402500,4074500,13,36.81132788,-106.0930865,16,US Forest Service,USFS Region 3,Carson National Forest,Tres Piedras Ranger District,Rio Arriba,NM,Enchanted Circle,0
+10,NM-CARSON-LE18,372500,4047500,13,36.56443457,-106.4248404,16,US Forest Service,USFS Region 3,Carson National Forest,Canjilon Ranger District,Rio Arriba,NM,Enchanted Circle,0
+11,NM-CARSON-LE19,432500,4001500,13,36.15589039,-105.7504111,16,US Forest Service,USFS Region 3,Carson National Forest,Camino Real Ranger District,Taos,NM,Enchanted Circle,1
+12,NM-CARSON-LE2,296500,4060500,13,36.6683677,-107.2771066,16,US Forest Service,USFS Region 3,Carson National Forest,Jicarilla Ranger District,Rio Arriba,NM,Enchanted Circle,0
+13,NM-CARSON-LE20,420500,4032500,13,36.43442717,-105.8869622,16,US Forest Service,USFS Region 3,Carson National Forest,Tres Piedras Ranger District,Taos,NM,Enchanted Circle,0
+14,NM-CARSON-LE21,299500,4094500,13,36.97526796,-107.2525236,16,US Forest Service,USFS Region 3,Carson National Forest,Jicarilla Ranger District,Rio Arriba,NM,Enchanted Circle,0
+15,NM-CARSON-LE22,391500,4051500,13,36.60283509,-106.2131221,16,US Forest Service,USFS Region 3,Carson National Forest,El Rito Ranger District,Rio Arriba,NM,Enchanted Circle,0
+16,NM-CARSON-LE23,449500,4015500,13,36.28313805,-105.5623308,16,US Forest Service,USFS Region 3,Carson National Forest,Camino Real Ranger District,Taos,NM,Enchanted Circle,1
+17,NM-CARSON-LE24,412500,4056500,13,36.65006219,-105.9789289,16,US Forest Service,USFS Region 3,Carson National Forest,Tres Piedras Ranger District,Rio Arriba,NM,Enchanted Circle,0
+18,NM-CARSON-LE26,390500,4025500,13,36.36837878,-106.2206183,16,US Forest Service,USFS Region 3,Carson National Forest,El Rito Ranger District,Rio Arriba,NM,Enchanted Circle,0
+19,NM-CARSON-LE27,421500,4040500,13,36.50662294,-105.8766183,16,US Forest Service,USFS Region 3,Carson National Forest,Tres Piedras Ranger District,Taos,NM,Enchanted Circle,0
+20,NM-CARSON-LE28,410500,4026500,13,36.37946249,-105.9978234,16,US Forest Service,USFS Region 3,Carson National Forest,El Rito Ranger District,Rio Arriba,NM,Enchanted Circle,0
+21,NM-CARSON-LE29,491500,4065500,13,36.73518084,-105.0952022,16,US Forest Service,USFS Region 3,Carson National Forest,Questa Ranger District,Colfax,NM,Enchanted Circle,1
+22,NM-CARSON-LE3,434500,3991500,13,36.06587718,-105.7273466,16,US Forest Service,USFS Region 3,Carson National Forest,Camino Real Ranger District,Rio Arriba,NM,Enchanted Circle,1
+23,NM-CARSON-LE30,376500,4019500,13,36.31260568,-106.3756893,16,US Forest Service,USFS Region 3,Carson National Forest,El Rito Ranger District,Rio Arriba,NM,Enchanted Circle,0
+24,NM-CARSON-LE32,453500,4012500,13,36.2562937,-105.5176129,16,US Forest Service,USFS Region 3,Carson National Forest,Camino Real Ranger District,Taos,NM,Enchanted Circle,1
+25,NM-CARSON-LE4,395500,4043500,13,36.53117625,-106.1673216,16,US Forest Service,USFS Region 3,Carson National Forest,El Rito Ranger District,Rio Arriba,NM,Enchanted Circle,0
+26,NM-CARSON-LE45,301500,4046500,13,36.54330865,-107.2175816,16,US Forest Service,USFS Region 3,Carson National Forest,Jicarilla Ranger District,Rio Arriba,NM,Enchanted Circle,0
+27,NM-CARSON-LE5,292500,4096500,13,36.9917642,-107.3316571,16,US Forest Service,USFS Region 3,Carson National Forest,Jicarilla Ranger District,Rio Arriba,NM,Enchanted Circle,0
+28,NM-CARSON-LE6,369500,4044500,13,36.53699268,-106.4578483,16,US Forest Service,USFS Region 3,Carson National Forest,Canjilon Ranger District,Rio Arriba,NM,Enchanted Circle,0
+29,NM-CARSON-LE7,422500,4014500,13,36.27233194,-105.8628583,16,US Forest Service,USFS Region 3,Carson National Forest,Tres Piedras Ranger District,Taos,NM,Enchanted Circle,0
+30,NM-CARSON-LE9,298500,4066500,13,36.72284074,-107.2563226,16,US Forest Service,USFS Region 3,Carson National Forest,Jicarilla Ranger District,Rio Arriba,NM,Enchanted Circle,0
+31,NM-CARSON-MH1,376500,4090500,13,36.95248328,-106.3871131,16,US Forest Service,USFS Region 3,Carson National Forest,Tres Piedras Ranger District,Rio Arriba,NM,Enchanted Circle,0
+32,NM-CARSON-MH10,478500,4065500,13,36.73497531,-105.2408046,16,US Forest Service,USFS Region 3,Carson National Forest,Questa Ranger District,Taos,NM,Enchanted Circle,1
+33,NM-CARSON-MH11,456500,4054500,13,36.6350613,-105.4865783,16,US Forest Service,USFS Region 3,Carson National Forest,Questa Ranger District,Taos,NM,Enchanted Circle,1
+34,NM-CARSON-MH12,467500,4027500,13,36.39209564,-105.3624015,16,US Forest Service,USFS Region 3,Carson National Forest,Camino Real Ranger District,Taos,NM,Enchanted Circle,1
+35,NM-CARSON-MH13,383500,4051500,13,36.60189112,-106.3025487,16,US Forest Service,USFS Region 3,Carson National Forest,El Rito Ranger District,Rio Arriba,NM,Enchanted Circle,0
+36,NM-CARSON-MH14,479500,4074500,13,36.81612973,-105.2298466,16,US Forest Service,USFS Region 3,Carson National Forest,Questa Ranger District,Taos,NM,Enchanted Circle,1
+37,NM-CARSON-MH15,380500,4035500,13,36.45731678,-106.3336043,16,US Forest Service,USFS Region 3,Carson National Forest,Canjilon Ranger District,Rio Arriba,NM,Enchanted Circle,0
+38,NM-CARSON-MH16,471500,4021500,13,36.33813112,-105.317579,16,US Forest Service,USFS Region 3,Carson National Forest,Camino Real Ranger District,Taos,NM,Enchanted Circle,1
+39,NM-CARSON-MH17,376500,4047500,13,36.56496037,-106.3801514,16,US Forest Service,USFS Region 3,Carson National Forest,Canjilon Ranger District,Rio Arriba,NM,Enchanted Circle,0
+40,NM-CARSON-MH18,386500,4088500,13,36.93571747,-106.2745223,16,US Forest Service,USFS Region 3,Carson National Forest,Tres Piedras Ranger District,Rio Arriba,NM,Enchanted Circle,0
+41,NM-CARSON-MH19,466500,4063500,13,36.71659818,-105.3751174,16,US Forest Service,USFS Region 3,Carson National Forest,Questa Ranger District,Taos,NM,Enchanted Circle,1
+42,NM-CARSON-MH2,392500,4087500,13,36.92740879,-106.2070185,16,US Forest Service,USFS Region 3,Carson National Forest,Tres Piedras Ranger District,Rio Arriba,NM,Enchanted Circle,0
+43,NM-CARSON-MH20,440500,3992500,13,36.07527817,-105.660799,16,US Forest Service,USFS Region 3,Carson National Forest,Camino Real Ranger District,Rio Arriba,NM,Enchanted Circle,1
+44,NM-CARSON-MH21,394500,4055500,13,36.63922414,-106.1801356,16,US Forest Service,USFS Region 3,Carson National Forest,Tres Piedras Ranger District,Rio Arriba,NM,Enchanted Circle,0
+45,NM-CARSON-MH4,454500,3992500,13,36.07603452,-105.5053232,16,US Forest Service,USFS Region 3,Carson National Forest,Camino Real Ranger District,Taos,NM,Enchanted Circle,1
+46,NM-CARSON-MH5,396500,4065500,13,36.72957426,-106.1591194,16,US Forest Service,USFS Region 3,Carson National Forest,Tres Piedras Ranger District,Rio Arriba,NM,Enchanted Circle,0
+47,NM-CARSON-MH6,380500,4083500,13,36.88991502,-106.3410923,16,US Forest Service,USFS Region 3,Carson National Forest,Tres Piedras Ranger District,Rio Arriba,NM,Enchanted Circle,0
+48,NM-CARSON-MH7,470500,4070500,13,36.77983353,-105.3305986,16,US Forest Service,USFS Region 3,Carson National Forest,Questa Ranger District,Taos,NM,Enchanted Circle,1
+49,NM-CARSON-MH8,454500,4003500,13,36.17520395,-105.5059592,16,US Forest Service,USFS Region 3,Carson National Forest,Camino Real Ranger District,Taos,NM,Enchanted Circle,1
+50,NM-CARSON-MH9,390500,4066500,13,36.73791371,-106.2264445,16,US Forest Service,USFS Region 3,Carson National Forest,Tres Piedras Ranger District,Rio Arriba,NM,Enchanted Circle,0
