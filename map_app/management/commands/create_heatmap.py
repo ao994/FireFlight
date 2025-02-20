@@ -77,13 +77,16 @@ class Command(BaseCommand):
         with rasterio.open(raster_file) as src:
             data = src.read(1)  # Read the first (and only) band.
 
-        # Define a custom colormap (from light green to red).
-        green_yellow_red_cmap = LinearSegmentedColormap.from_list(
-            'green_yellow_red', ['lightgreen', 'yellow', 'red'], N=256)
+        # Mask the data where values are 0.0 so they appear transparent.
+        masked_data = np.ma.masked_equal(data, 0.0)
+
+        # Create a copy of the 'cividis' colormap and set the masked ('bad') values to be transparent.
+        cmap = plt.get_cmap('cividis').copy()
+        cmap.set_bad(color=(0, 0, 0, 0))  # Fully transparent RGBA tuple
 
         # Plot the raster data using matplotlib.
         plt.figure(figsize=(10, 6))
-        plt.imshow(data, cmap=green_yellow_red_cmap, interpolation='nearest')
+        plt.imshow(masked_data, cmap=cmap, interpolation='nearest')
         plt.colorbar(label='Posterior Median')
         plt.title('Heatmap from Raster using Posterior Median')
         plt.show()
