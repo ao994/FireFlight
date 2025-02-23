@@ -1,8 +1,9 @@
 #Andy, Alyssa
 
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotFound
 from csp.decorators import csp_exempt
+import csv
 
 from .models import Species, Grid, Results
 
@@ -29,3 +30,45 @@ def map(request):
 def enchanted_circle_map(request):
     
     return render(request, 'enchanted_circle_map.html')
+
+@csp_exempt
+def query(request, modelName):
+    # Create the HttpResponse object with the appropriate CSV header.
+    filename = f"{modelName.lower()}_data.csv"
+    response = HttpResponse(
+        content_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+    # make sure a valid model type is being requested
+    modelDict = {
+        "Species" : Species,
+        "species" : Species,
+        "Grid" : Grid,
+        "grid" : Grid,
+        "Results" : Results,
+        "results" : Results
+    }
+
+    # get the db model/table we want:
+    modelChoice = modelDict.get(modelName)
+    # otherwise, return an error
+    if modelChoice is None:
+        return HttpResponseNotFound("<h1>Error: Model Not Found!</h1>")
+    
+    # start a csv writer
+    writer = csv.writer(response)
+
+    # get the fields and write them to the csv
+    fields = [field.name for field in modelChoice._meta.fields]
+    writer.writerow(fields)
+
+    # get all elements of model from db
+    modelQuerySet = modelChoice.objects.all()
+
+    # write all elements to the csv
+    for entry in modelQuerySet:
+        writer.writerow([getattr(entry, field) for field in fields])
+
+    # return the http response, download the csv
+    return response
