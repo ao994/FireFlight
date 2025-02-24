@@ -5,6 +5,7 @@ import rasterio
 import matplotlib.pyplot as plt
 from django.core.management.base import BaseCommand
 from rasterio.transform import from_origin
+from scipy.ndimage import gaussian_filter  # For smoothing
 from map_app.models import Species, Grid, Results
 
 class Command(BaseCommand):
@@ -13,7 +14,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.stdout.write(self.style.SUCCESS('Starting heatmap raster generation and Folium map creation...'))
 
-        # Define directories for static images and templates.
+        # Ensure directories exist.
         static_dir = os.path.join('map_app', 'static', 'images')
         if not os.path.exists(static_dir):
             os.makedirs(static_dir)
@@ -26,21 +27,19 @@ class Command(BaseCommand):
         raster_png = os.path.join(static_dir, 'heatmap_raster.png')
         map_output = os.path.join(template_dir, 'enchanted_circle_map.html')
 
-        # Generate the heatmap raster GeoTIFF from model data.
+        # Generate the heatmap raster GeoTIFF.
         bounds = self.create_heatmap_raster(raster_tif)
 
-        # Define the viridis colormap, a popular colorblind-friendly option.
+        # Use the colorblind-friendly 'viridis' colormap without setting transparency.
         viridis_cmap = plt.get_cmap('viridis').copy()
-        # Instead of transparent, set masked (no-data) values to white for better contrast.
-        viridis_cmap.set_bad(color=(1, 1, 1, 1))  
+        # (Removed: viridis_cmap.set_bad(color=(1, 1, 1, 1)))
 
-        # Convert the GeoTIFF to a PNG image using the viridis colormap.
+        # Convert the GeoTIFF to PNG using the viridis colormap.
         bounds = self.convert_geotiff_to_png(raster_tif, raster_png, viridis_cmap)
-        # Rasterio returns bounds as (left, bottom, right, top) so we form overlay bounds accordingly.
         overlay_bounds = [[bounds.bottom, bounds.left], [bounds.top, bounds.right]]
         self.stdout.write(self.style.SUCCESS(f"Raster bounds: {overlay_bounds}"))
 
-        # Create a Folium map centered on the Enchanted Circle region (approximate coordinates).
+        # Create a Folium map with the PNG overlay.
         m = folium.Map(location=[36.5, -105.5], zoom_start=9)
         folium.raster_layers.ImageOverlay(
             image=raster_png,
@@ -52,79 +51,72 @@ class Command(BaseCommand):
             zindex=1,
         ).add_to(m)
         folium.LayerControl().add_to(m)
-
-        # Save the map as an HTML file.
         m.save(map_output)
         self.stdout.write(self.style.SUCCESS(f'Folium map generated and saved to: {map_output}'))
 
     def create_heatmap_raster(self, output_raster):
         """
-        Queries the Results model for grid coordinates and posterior median values,
-        builds a raster grid, and writes the data to a GeoTIFF file.
+        Queries Results for grid coordinates and posterior median values,
+        builds a raster grid, applies smoothing and scaling,
+        and writes a GeoTIFF.
         Returns the raster bounds.
         """
-        # Gather data from the Results model.
-        latitudes = []
-        longitudes = []
-        medians = []
+        latitudes, longitudes, medians = [], [], []
         results = Results.objects.select_related('bird_speciesID', 'gridID').all()
-
         for result in results:
             grid = result.gridID
             latitudes.append(grid.Grid_Lat_NAD83)
             longitudes.append(grid.Grid_Long_NAD83)
             medians.append(result.posterior_median)
 
-        # Define the raster grid parameters.
-        min_lat = min(latitudes)
-        max_lat = max(latitudes)
-        min_lon = min(longitudes)
-        max_lon = max(longitudes)
-        pixel_size = 0.01  # Adjust pixel size as needed.
-
+        min_lat, max_lat = min(latitudes), max(latitudes)
+        min_lon, max_lon = min(longitudes), max(longitudes)
+        pixel_size = 0.01  # Adjust as needed.
         nrows = int((max_lat - min_lat) / pixel_size) + 1
         ncols = int((max_lon - min_lon) / pixel_size) + 1
-
-        # Initialize the raster data array.
         raster_data = np.zeros((nrows, ncols), dtype=np.float32)
-
-        # Define the geospatial transform.
-        # from_origin expects (west, north, pixel_width, pixel_height).
         transform = from_origin(min_lon, max_lat, pixel_size, pixel_size)
 
-        # Populate the raster array with posterior median values.
         for lat, lon, median in zip(latitudes, longitudes, medians):
             row = int((max_lat - lat) / pixel_size)
             col = int((lon - min_lon) / pixel_size)
             raster_data[row, col] = median
 
-        # Write the raster data to a GeoTIFF file.
+        # Apply Gaussian smoothing (sigma=2.0) and boost intensity.
+        raster_data = gaussian_filter(raster_data, sigma=2.0)
+        raster_data = raster_data * 20
+
         with rasterio.open(
-            output_raster, 'w', driver='GTiff', 
+            output_raster, 'w', driver='GTiff',
             height=nrows, width=ncols, count=1, dtype='float32',
             crs='+proj=latlong', transform=transform
         ) as dst:
             dst.write(raster_data, 1)
 
         self.stdout.write(self.style.SUCCESS(f"Raster file created at '{output_raster}'."))
-
-        # Open the file again to retrieve its bounds.
         with rasterio.open(output_raster) as src:
             return src.bounds
 
     def convert_geotiff_to_png(self, geotiff_path, png_path, cmap):
         """
-        Reads a GeoTIFF file, extracts its data and geographic bounds,
-        and saves the data as a PNG image using the provided colormap.
+        Reads a GeoTIFF, normalizes its data with clipping for high intensities,
+        and saves it as a PNG using the provided colormap.
         Returns the raster bounds.
         """
         with rasterio.open(geotiff_path) as src:
             data = src.read(1)
-            bounds = src.bounds  # (left, bottom, right, top)
+            bounds = src.bounds
 
-        # Mask data where values are 0.0 so they display with the specified background.
         masked_data = np.ma.masked_equal(data, 0.0)
+        if masked_data.max() - masked_data.min() > 0:
+            norm_data = (masked_data - masked_data.min()) / (masked_data.max() - masked_data.min())
+        else:
+            norm_data = masked_data
 
-        # Save the raster data as a PNG image using the provided colormap.
-        plt.imsave(png_path, masked_data, cmap=cmap)
+        # Clip at the 95th percentile to saturate high values.
+        thresh = np.percentile(norm_data.compressed(), 95)
+        norm_data = np.clip(norm_data, 0, thresh)
+        norm_data = norm_data / thresh
+
+        plt.imsave(png_path, norm_data, cmap=cmap, vmin=0, vmax=1)
         return bounds

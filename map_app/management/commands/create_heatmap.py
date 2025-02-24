@@ -4,7 +4,7 @@ import rasterio
 import matplotlib.pyplot as plt
 from django.core.management.base import BaseCommand
 from rasterio.transform import from_origin
-from matplotlib.colors import LinearSegmentedColormap
+from scipy.ndimage import gaussian_filter  # For smoothing
 from map_app.models import Species, Grid, Results
 
 class Command(BaseCommand):
@@ -18,51 +18,45 @@ class Command(BaseCommand):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         
-        # Set the output raster file path within the static images folder.
+        # Set the output raster file path.
         output_raster = os.path.join(output_dir, 'heatmap_raster.tif')
         
         self.create_heatmap_raster(output_raster)
-        self.visualize_raster(output_raster)  # Visualize the raster from the static images folder.
+        self.visualize_raster(output_raster)  # Visualize the raster.
         self.stdout.write(self.style.SUCCESS('Raster generation and visualization completed.'))
 
     def create_heatmap_raster(self, output_raster):
-        # Query the Results table to get grid coordinates and posterior median values.
-        latitudes = []
-        longitudes = []
-        medians = []
-
+        # Query the Results table for grid coordinates and posterior median values.
+        latitudes, longitudes, medians = [], [], []
         results = Results.objects.select_related('bird_speciesID', 'gridID').all()
-
         for result in results:
             grid = result.gridID
-            lat = grid.Grid_Lat_NAD83
-            lon = grid.Grid_Long_NAD83
-            median = result.posterior_median  # Using posterior median values.
-            latitudes.append(lat)
-            longitudes.append(lon)
-            medians.append(median)
+            latitudes.append(grid.Grid_Lat_NAD83)
+            longitudes.append(grid.Grid_Long_NAD83)
+            medians.append(result.posterior_median)
 
-        # Setup the raster grid parameters.
-        min_lat = min(latitudes)
-        max_lat = max(latitudes)
-        min_lon = min(longitudes)
-        max_lon = max(longitudes)
-        pixel_size = 0.01  # Adjust the pixel size as necessary.
-
+        # Define raster grid parameters.
+        min_lat, max_lat = min(latitudes), max(latitudes)
+        min_lon, max_lon = min(longitudes), max(longitudes)
+        pixel_size = 0.01  # Adjust as needed.
         nrows = int((max_lat - min_lat) / pixel_size) + 1
         ncols = int((max_lon - min_lon) / pixel_size) + 1
         raster_data = np.zeros((nrows, ncols), dtype=np.float32)
 
-        # Define the geospatial transform for the raster.
-        transform = from_origin(max_lon, min_lat + pixel_size, pixel_size, pixel_size)
+        # Use from_origin(min_lon, max_lat, pixel_size, pixel_size) for correct alignment.
+        transform = from_origin(min_lon, max_lat, pixel_size, pixel_size)
 
-        # Fill the raster with posterior median values.
+        # Populate the raster with posterior median values.
         for lat, lon, median in zip(latitudes, longitudes, medians):
             row = int((max_lat - lat) / pixel_size)
             col = int((lon - min_lon) / pixel_size)
             raster_data[row, col] = median
 
-        # Write the raster data to a GeoTIFF file in the static images folder.
+        # Apply Gaussian smoothing (sigma=2.0) and boost intensity.
+        raster_data = gaussian_filter(raster_data, sigma=2.0)
+        raster_data = raster_data * 20  # Adjust multiplier as needed.
+
+        # Write the smoothed/scaled raster to a GeoTIFF.
         with rasterio.open(
             output_raster, 'w', driver='GTiff', 
             height=nrows, width=ncols, count=1, dtype='float32',
@@ -73,20 +67,31 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"Raster file created at '{output_raster}'."))
 
     def visualize_raster(self, raster_file):
-        # Open the raster file from the static images folder.
+        # Open the raster file.
         with rasterio.open(raster_file) as src:
-            data = src.read(1)  # Read the first (and only) band.
+            data = src.read(1)
 
-        # Mask the data where values are 0.0 so they appear transparent.
+        # Mask out zero values.
         masked_data = np.ma.masked_equal(data, 0.0)
 
-        # Create a copy of the 'cividis' colormap and set the masked ('bad') values to be transparent.
-        cmap = plt.get_cmap('cividis').copy()
-        cmap.set_bad(color=(0, 0, 0, 0))  # Fully transparent RGBA tuple
+        # Normalize data to [0, 1].
+        if masked_data.max() - masked_data.min() > 0:
+            norm_data = (masked_data - masked_data.min()) / (masked_data.max() - masked_data.min())
+        else:
+            norm_data = masked_data
 
-        # Plot the raster data using matplotlib.
+        # Clip values at the 95th percentile so that high intensities saturate to 1.
+        thresh = np.percentile(norm_data.compressed(), 95)
+        norm_data = np.clip(norm_data, 0, thresh)
+        norm_data = norm_data / thresh
+
+        # Use the colorblind-friendly 'viridis' colormap without transparency.
+        cmap = plt.get_cmap('viridis').copy()
+        # (Removed: cmap.set_bad(color=(0, 0, 0, 0)))
+
+        # Display the heatmap with bilinear interpolation.
         plt.figure(figsize=(10, 6))
-        plt.imshow(masked_data, cmap=cmap, interpolation='nearest')
-        plt.colorbar(label='Posterior Median')
+        plt.imshow(norm_data, cmap=cmap, interpolation='bilinear', vmin=0, vmax=1)
+        plt.colorbar(label='Posterior Median (normalized)')
         plt.title('Heatmap from Raster using Posterior Median')
         plt.show()
