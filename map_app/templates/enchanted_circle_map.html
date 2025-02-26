@@ -52,11 +52,13 @@
 <body>
     
     
-            <div class="folium-map" id="map_845035cdec5b53a3a96df44b021f72cf" ></div>
-        
+            <div class="folium-map" id="map_845035cdec5b53a3a96df44b021f72cf" >
+            
+            </div>
+            
+
 </body>
 <script>
-    
     
             var map_845035cdec5b53a3a96df44b021f72cf = L.map(
                 "map_845035cdec5b53a3a96df44b021f72cf",
@@ -66,8 +68,11 @@
                     zoom: 9,
                     zoomControl: true,
                     preferCanvas: false,
+                    //button:history.back()
                 }
             );
+        
+            
 
             
 
@@ -106,6 +111,37 @@
                 {"autoZIndex": true, "collapsed": true, "position": "topright"}
             ).addTo(map_845035cdec5b53a3a96df44b021f72cf);
 
+/*             var backwards = {
+                back_button:{
+                    "backwards button": history.back()
+                }
+            }
+            let back_button = history.back({"position":"topleft"});
+            backwards.addTo(map_845035cdec5b53a3a96df44b021f72cf); */
+
+            (function() {
+	var control = new L.Control({position:'centerleft'});
+	control.onAdd = function(map) {
+			var azoom = L.DomUtil.create('a','resetzoom');
+			azoom.innerHTML = "[Reset Zoom]";
+			L.DomEvent
+				.disableClickPropagation(azoom)
+				.addListener(azoom, 'click', function() {
+					map.setView(map.options.center, map.options.zoom);
+				},azoom);
+			return azoom;
+		};
+	return control;
+}()).addTo(map);
+            
+
+            
+            
         
 </script>
+<div class="leaflet-bottom leaflet-left">
+
+
+</div>
+
 </html>
