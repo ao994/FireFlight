@@ -15,7 +15,8 @@ def index(request):
     if request.method == "GET":  
         return render(request, index_page)
 
-@csp_exempt
+
+@csp_exempt #currently not enforcing the set csp protection rules
 def map(request):
     #set page to load
     map_page = "map.html"
@@ -26,7 +27,7 @@ def map(request):
         birds = Species.objects.all()
         return render(request, map_page, {'birds': birds})
 
-@csp_exempt
+@csp_exempt #currently not enforcing the set csp protection rules
 def enchanted_circle_map(request):
     
     return render(request, 'enchanted_circle_map.html')
