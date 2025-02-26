@@ -73,3 +73,12 @@ def query(request, modelName):
 
     # return the http response, download the csv
     return response
+
+@csp_exempt
+def instructions(request):
+    
+    instructions_page = "instructions.html"
+
+    #defines what happens when there is a GET request
+    if request.method == "GET":  
+        return render(request, instructions_page)
