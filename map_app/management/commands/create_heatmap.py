@@ -71,23 +71,19 @@ class Command(BaseCommand):
         with rasterio.open(raster_file) as src:
             data = src.read(1)
 
-        # Mask out zero values.
-        masked_data = np.ma.masked_equal(data, 0.0)
-
-        # Normalize data to [0, 1].
-        if masked_data.max() - masked_data.min() > 0:
-            norm_data = (masked_data - masked_data.min()) / (masked_data.max() - masked_data.min())
+        # Normalize data to [0, 1] using the full data array.
+        if data.max() - data.min() > 0:
+            norm_data = (data - data.min()) / (data.max() - data.min())
         else:
-            norm_data = masked_data
+            norm_data = data
 
         # Clip values at the 95th percentile so that high intensities saturate to 1.
-        thresh = np.percentile(norm_data.compressed(), 95)
+        thresh = np.percentile(norm_data, 95)
         norm_data = np.clip(norm_data, 0, thresh)
         norm_data = norm_data / thresh
 
-        # Use the colorblind-friendly 'viridis' colormap without transparency.
+        # Use the colorblind-friendly 'viridis' colormap.
         cmap = plt.get_cmap('viridis').copy()
-        # (Removed: cmap.set_bad(color=(0, 0, 0, 0)))
 
         # Display the heatmap with bilinear interpolation.
         plt.figure(figsize=(10, 6))

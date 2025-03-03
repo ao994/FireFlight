@@ -6,10 +6,11 @@ import matplotlib.pyplot as plt
 from django.core.management.base import BaseCommand
 from rasterio.transform import from_origin
 from scipy.ndimage import gaussian_filter  # For smoothing
+from matplotlib.colors import LinearSegmentedColormap
 from map_app.models import Species, Grid, Results
 
 class Command(BaseCommand):
-    help = 'Generate a Folium map with a heatmap raster overlay created from Results model data'
+    help = 'Generate a Folium map with a heatmap raster overlay using a custom blue-white-orange colormap with a gradual gradient and interpolated data'
 
     def handle(self, *args, **kwargs):
         self.stdout.write(self.style.SUCCESS('Starting heatmap raster generation and Folium map creation...'))
@@ -30,12 +31,25 @@ class Command(BaseCommand):
         # Generate the heatmap raster GeoTIFF.
         bounds = self.create_heatmap_raster(raster_tif)
 
-        # Use the colorblind-friendly 'viridis' colormap without setting transparency.
-        viridis_cmap = plt.get_cmap('viridis').copy()
-        # (Removed: viridis_cmap.set_bad(color=(1, 1, 1, 1)))
+        # Create a custom blue-white-orange colormap with a gradual gradient:
+        # 0.0 -> Blue (background)
+        # 0.3 -> Blue remains (low intensities)
+        # 0.5 -> White (edges)
+        # 0.7 -> Light orange (transition)
+        # 1.0 -> Orange (center, highest intensity)
+        custom_cmap = LinearSegmentedColormap.from_list(
+            'custom_blue_white_orange', 
+            [
+                (0.0, '#1f78b4'),
+                (0.3, '#1f78b4'),
+                (0.5, '#ffffff'),
+                (0.7, '#ffbb78'),
+                (1.0, '#ff7f00')
+            ]
+        )
 
-        # Convert the GeoTIFF to PNG using the viridis colormap.
-        bounds = self.convert_geotiff_to_png(raster_tif, raster_png, viridis_cmap)
+        # Convert the GeoTIFF to PNG using the custom colormap.
+        bounds = self.convert_geotiff_to_png(raster_tif, raster_png, custom_cmap)
         overlay_bounds = [[bounds.bottom, bounds.left], [bounds.top, bounds.right]]
         self.stdout.write(self.style.SUCCESS(f"Raster bounds: {overlay_bounds}"))
 
@@ -82,9 +96,10 @@ class Command(BaseCommand):
             col = int((lon - min_lon) / pixel_size)
             raster_data[row, col] = median
 
-        # Apply Gaussian smoothing (sigma=2.0) and boost intensity.
-        raster_data = gaussian_filter(raster_data, sigma=2.0)
-        raster_data = raster_data * 20
+        # Increase the sigma value for Gaussian smoothing to blend points into larger masses.
+        sigma_value = 4.0  # Adjust as needed for more interpolation.
+        raster_data = gaussian_filter(raster_data, sigma=sigma_value)
+        raster_data = raster_data * 20  # Adjust multiplier as needed.
 
         with rasterio.open(
             output_raster, 'w', driver='GTiff',
@@ -107,14 +122,14 @@ class Command(BaseCommand):
             data = src.read(1)
             bounds = src.bounds
 
-        masked_data = np.ma.masked_equal(data, 0.0)
-        if masked_data.max() - masked_data.min() > 0:
-            norm_data = (masked_data - masked_data.min()) / (masked_data.max() - masked_data.min())
+        # Normalize using the full data array.
+        if data.max() - data.min() > 0:
+            norm_data = (data - data.min()) / (data.max() - data.min())
         else:
-            norm_data = masked_data
+            norm_data = data
 
         # Clip at the 95th percentile to saturate high values.
-        thresh = np.percentile(norm_data.compressed(), 95)
+        thresh = np.percentile(norm_data, 95)
         norm_data = np.clip(norm_data, 0, thresh)
         norm_data = norm_data / thresh
 
