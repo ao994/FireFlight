@@ -16,7 +16,6 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         # get the file/path
         filePath = kwargs['filePath']
-        print(filePath)
 
         # try to open file
         try:
@@ -26,7 +25,7 @@ class Command(BaseCommand):
                 
                 # skip field names
                 fields = next(csvreader)
-                print(fields)
+
                 match fields[0]:
                     # if species file
                     case "speciesID":
@@ -59,6 +58,8 @@ class Command(BaseCommand):
                                 obj.save()
                             except Exception as e:
                                 print(f'{e}')
+
+                            self.stdout.write(self.style.SUCCESS(f'Database populated successfully from {filePath}!'))
                     
                     # if grid file
                     case "ï»¿OID_" | "OID_" | "\ufeffOID_":
@@ -145,6 +146,8 @@ class Command(BaseCommand):
                             except Exception as e:
                                 print(f'{e}')
 
+                            self.stdout.write(self.style.SUCCESS(f'Database populated successfully from {filePath}!'))
+
                     # if results file
                     case "parameter":
                         # go through data line by line
@@ -184,12 +187,12 @@ class Command(BaseCommand):
                                 obj.save()
                             except Exception as e:
                                 print(f'{e}')
+
+                            self.stdout.write(self.style.SUCCESS(f'Database populated successfully from {filePath}!'))
+
                     #case of failure to recognize file
                     case _:
                         print(f'Error: First column name of file not recognized.')
-
-            #this also prints in failure: need to change            
-            self.stdout.write(self.style.SUCCESS(f'Database populated successfully from {filePath}!'))
 
         # if file inaccessible, return an error
         except Exception as e2:

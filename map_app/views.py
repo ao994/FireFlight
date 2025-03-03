@@ -69,7 +69,26 @@ def query(request, modelName):
 
     # write all elements to the csv
     for entry in modelQuerySet:
-        writer.writerow([getattr(entry, field) for field in fields])
+        # variable for holding current row
+        row = []
+
+        # for field in database row's fields
+        for field in fields:
+            # get the attribute's value
+            value = getattr(entry, field)
+
+            # find out what it is
+            fieldObj = modelChoice._meta.get_field(field)
+            
+            # if a primary key, get the key's id value
+            if fieldObj.is_relation:
+                value = getattr(value, "id", value)
+
+            # add value to the current row
+            row.append(value)
+
+        # write the current row to the csv
+        writer.writerow(row)
 
     # return the http response, download the csv
     return response
