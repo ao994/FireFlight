@@ -15,7 +15,8 @@ def index(request):
     if request.method == "GET":  
         return render(request, index_page)
 
-@csp_exempt
+
+@csp_exempt #currently not enforcing the set csp protection rules
 def map(request):
     #set page to load
     map_page = "map.html"
@@ -26,7 +27,7 @@ def map(request):
         birds = Species.objects.all()
         return render(request, map_page, {'birds': birds})
 
-@csp_exempt
+@csp_exempt #currently not enforcing the set csp protection rules
 def enchanted_circle_map(request):
     
     return render(request, 'enchanted_circle_map.html')
@@ -68,7 +69,26 @@ def query(request, modelName):
 
     # write all elements to the csv
     for entry in modelQuerySet:
-        writer.writerow([getattr(entry, field) for field in fields])
+        # variable for holding current row
+        row = []
+
+        # for field in database row's fields
+        for field in fields:
+            # get the attribute's value
+            value = getattr(entry, field)
+
+            # find out what it is
+            fieldObj = modelChoice._meta.get_field(field)
+            
+            # if a primary key, get the key's id value
+            if fieldObj.is_relation:
+                value = getattr(value, "id", value)
+
+            # add value to the current row
+            row.append(value)
+
+        # write the current row to the csv
+        writer.writerow(row)
 
     # return the http response, download the csv
     return response
