@@ -3,7 +3,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseNotFound
 from csp.decorators import csp_exempt
-import csv
+import csv, datetime
 
 from .models import Species, Grid, Results
 
@@ -26,6 +26,12 @@ def map(request):
         #gets all the birds
         birds = Species.objects.all()
         return render(request, map_page, {'birds': birds})
+    
+    #defines what happens when the map is updated
+    if request.method == "POST":
+        # IN PROGRESS
+        getCSV()
+        
 
 @csp_exempt #currently not enforcing the set csp protection rules
 def enchanted_circle_map(request):
@@ -101,3 +107,34 @@ def instructions(request):
     #defines what happens when there is a GET request
     if request.method == "GET":  
         return render(request, instructions_page)
+    
+
+#####################################################
+#             Query to csv functions                #
+#####################################################
+
+#IN PROGRESS
+def getCSV(birdList):
+    #get date and time for export name
+    curTime = datetime.datetime.now()
+    timeStr = curTime.strftime("%m-%d-%Y_%H_%M")
+
+    # Create the HttpResponse object with the appropriate CSV header.
+    filename = f"bird_data_{timeStr}.csv"
+    csvOutput = HttpResponse(
+        content_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+    # start a csv writer
+    writer = csv.writer(csvOutput)
+
+
+    # get the fields and write them to the csv
+    # IN PROGRESS- make custom fields (bird name, etc that was specified by clients)
+    fields = [field.name for field in modelChoice._meta.fields]
+    writer.writerow(fields)
+
+    #for bird in birdlist? or an if statement: if bird is in birdlist, print row
+
+    return csvOutput
