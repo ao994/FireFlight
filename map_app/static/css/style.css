@@ -3,7 +3,7 @@ body {
     padding: 0;
 
     color:black;
-    background-image: url("/static/images/main_photo.jpg");
+    background-image: url("/static/images/ponderosa_scene_ChimneySprings_CoconinoNF.jpg");
     background-position:center;
     background-repeat: no-repeat;
     text-align: center;
@@ -31,6 +31,16 @@ p{
     background: rgba(255,255,255,0.5);
     border-radius: 2px;      
 }
+
+h3{
+    position: relative;
+    margin: 1% auto;
+    width: 700px; 
+    font-size: larger;
+    background: rgba(255,255,255,0.5);
+    border-radius: 2px;   
+}
+
 iframe{
     display:flex ;
     justify-content: center;
