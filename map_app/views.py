@@ -29,9 +29,41 @@ def map(request):
     
     #defines what happens when the map is updated
     if request.method == "POST":
-        # IN PROGRESS
-        getCSV()
+        # get the list of bird requested
+        birdList = request.POST.getlist("birdSpecies")
+
+        # create new csv file with current parameters
+        csvFile = getCSV(birdList)
+
+        # update map TYLER COMMAND NEEDS TO BE UPDATED BEFORE THIS WILL RUN
+        #generate map on data present in users local cache (to prevent race conditions)
         
+        # call_command('create_heatmap', csvFile)
+
+
+
+        # reload the page with updated map
+        return render(request, map_page)
+    
+@csp_exempt #currently not enforcing the set csp protection rules
+def download(request):
+    
+    #get csv Export file
+    csvExport = ""
+    
+    #get date and time for export name
+    curTime = datetime.datetime.now()
+    timeStr = curTime.strftime("%m-%d-%Y_%H_%M")
+
+    #create http download
+    response = HttpResponse(
+        csvExport,
+        content_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="bird_data_{timeStr}.csv"'},
+    )
+
+    return response
+
 
 @csp_exempt #currently not enforcing the set csp protection rules
 def enchanted_circle_map(request):
@@ -113,28 +145,52 @@ def instructions(request):
 #             Query to csv functions                #
 #####################################################
 
-#IN PROGRESS
+#takes in list of bird species ids, returns CSV file with specified results
 def getCSV(birdList):
-    #get date and time for export name
-    curTime = datetime.datetime.now()
-    timeStr = curTime.strftime("%m-%d-%Y_%H_%M")
+    
+    # Create the csv file name
+    filename = f"bird_data.csv"
 
-    # Create the HttpResponse object with the appropriate CSV header.
-    filename = f"bird_data_{timeStr}.csv"
-    csvOutput = HttpResponse(
-        content_type="text/csv",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-    )
+    #creates and opens new csv file
+    with open(filename, 'w', newline='') as csvOutput:
 
-    # start a csv writer
-    writer = csv.writer(csvOutput)
+        # start a csv writer
+        writer = csv.writer(csvOutput)
 
+        #get relevant rows
+        outputResults = Results.objects.filter(bird_speciesID__speciesID__in = birdList)
 
-    # get the fields and write them to the csv
-    # IN PROGRESS- make custom fields (bird name, etc that was specified by clients)
-    fields = [field.name for field in modelChoice._meta.fields]
-    writer.writerow(fields)
+        # get the fields and write them to the csv
+        fields = ["grid_OID", "species", "birdcode", "lbci", "posterior_median", "ubci"]
+        writer.writerow(fields)
 
-    #for bird in birdlist? or an if statement: if bird is in birdlist, print row
+        
+        #print all the lines in the results table to the csv
+        for entry in outputResults:
+            # variable for holding current row
+            row = []
+
+            #get grid OID
+            gridID = getattr(entry.gridID, "id")
+            gridObject = Grid.objects.get(id = gridID)
+            # add grid_OID to the current row
+            row.append(gridObject.OID)    
+            
+            #get species name and birdcode
+            speciesID = getattr(entry.bird_speciesID, "id")
+            speciesObject = Species.objects.get(id = speciesID)
+            # add species name and birdcode to the current row
+            row.append(speciesObject.species)
+            row.append(speciesObject.birdcode)
+
+            # add lbci, posterior median, and ubci to curent row
+            row.append(entry.lbci)
+            row.append(entry.posterior_median)
+            row.append(entry.ubci)
+
+            
+            # write the current row to the csv
+            writer.writerow(row)
+
 
     return csvOutput

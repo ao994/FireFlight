@@ -21,21 +21,29 @@
             Bird Species
         </button>
         
+        <form action="/map/" method="post" id="birdForm">
+        {% csrf_token %}
+        
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" >
             <div class="list-group" style="height: 30vh; overflow-y: scroll;">
+            
+            
                 
-                {% for bird in birds %}
+            {% for bird in birds %}
                 <!-- Currently: can choose any bird.
                         Goal: can choose only birds that are not protected. -->
-                <label class="list-group-item">
-                    <input class="form-check-input me-1" type="checkbox" value=" {{bird.speciesID}} ">
+                <label class="list-group-item" for="{{bird.speciesID}}">
+                    <input class="form-check-input me-1" type="checkbox" name="birdSpecies" value="{{bird.speciesID}}">
                     {{bird.species}}
                 </label>  
             
                 {% endfor %}
 
+            
             </div>
         </div>
+        </form>
+
     </div>
     </div>
 
@@ -50,11 +58,11 @@
 
         <!-- Currently: Navigates to current page, refreshing and resetting everything
              Goal: Change to "update", and will apply chosen options -->
-        <form action="" method="post">
-        <button class="btn btn-secondary mx-1" type="submit">
+        
+        <button class="btn btn-secondary mx-1" form="birdForm" type="submit">
             Update
         </button>
-        </form>
+        
 
 
         <!-- Currently: does nothing
