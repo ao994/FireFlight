@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseNotFound
 from csp.decorators import csp_exempt
 import csv, datetime
+from django.core.management import call_command
 
 from .models import Species, Grid, Results
 
@@ -35,12 +36,10 @@ def map(request):
         # create new csv file with current parameters
         csvFile = getCSV(birdList)
 
-        # update map TYLER COMMAND NEEDS TO BE UPDATED BEFORE THIS WILL RUN
-        #generate map on data present in users local cache (to prevent race conditions)
-        
-        # call_command('create_heatmap', csvFile)
-
-
+        # update map 
+        # TODO: generate map on data present in users local cache (to prevent race conditions)
+        call_command('create_heatmap')
+        call_command('generate_enchanted_circle_map')
 
         # reload the page with updated map
         return render(request, map_page)
