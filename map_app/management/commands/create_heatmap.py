@@ -24,7 +24,6 @@ class Command(BaseCommand):
         output_raster = os.path.join(output_dir, 'heatmap_raster.tif')
         
         self.create_heatmap_raster(output_raster)
-        self.visualize_raster(output_raster)  # Visualize the raster.
         self.stdout.write(self.style.SUCCESS('Raster generation and visualization completed.'))
 
     def create_heatmap_raster(self, output_raster):
@@ -99,29 +98,3 @@ class Command(BaseCommand):
             dst.write(raster_data, 1)
 
         self.stdout.write(self.style.SUCCESS(f"Raster file created at '{output_raster}'."))
-
-    def visualize_raster(self, raster_file):
-        # Open the raster file.
-        with rasterio.open(raster_file) as src:
-            data = src.read(1)
-
-        # Normalize data to [0, 1] using the full data array.
-        if data.max() - data.min() > 0:
-            norm_data = (data - data.min()) / (data.max() - data.min())
-        else:
-            norm_data = data
-
-        # Clip values at the 95th percentile so that high intensities saturate to 1.
-        thresh = np.percentile(norm_data, 95)
-        norm_data = np.clip(norm_data, 0, thresh)
-        norm_data = norm_data / thresh
-
-        # Use the colorblind-friendly 'viridis' colormap.
-        cmap = plt.get_cmap('viridis').copy()
-
-        # Display the heatmap with bilinear interpolation.
-        plt.figure(figsize=(10, 6))
-        plt.imshow(norm_data, cmap=cmap, interpolation='bilinear', vmin=0, vmax=1)
-        plt.colorbar(label='Posterior Median (normalized)')
-        plt.title('Heatmap from Raster using Posterior Median')
-        plt.show()

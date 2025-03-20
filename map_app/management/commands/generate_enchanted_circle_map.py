@@ -36,11 +36,6 @@ class Command(BaseCommand):
         bounds = self.create_heatmap_raster(raster_tif)
 
         # Create a custom blue-white-orange colormap with a gradual gradient:
-        # 0.0 -> Blue (background)
-        # 0.3 -> Blue remains (low intensities)
-        # 0.5 -> White (edges)
-        # 0.7 -> Light orange (transition)
-        # 1.0 -> Orange (center, highest intensity)
         custom_cmap = LinearSegmentedColormap.from_list(
             'custom_white_to_orange', 
             [
