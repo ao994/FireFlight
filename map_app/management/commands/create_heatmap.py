@@ -1,14 +1,16 @@
 import os
+import csv
 import numpy as np
 import rasterio
 import matplotlib.pyplot as plt
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from rasterio.transform import from_origin
 from scipy.ndimage import gaussian_filter  # For smoothing
-from map_app.models import Species, Grid, Results
+from map_app.models import Grid
 
 class Command(BaseCommand):
-    help = 'Generate heatmap raster from Results model data using posterior median values'
+    help = 'Generate heatmap raster from grid data (DB) and filtered posterior median values (CSV)'
 
     def handle(self, *args, **kwargs):
         self.stdout.write(self.style.SUCCESS('Starting raster generation...'))
@@ -26,14 +28,44 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('Raster generation and visualization completed.'))
 
     def create_heatmap_raster(self, output_raster):
-        # Query the Results table for grid coordinates and posterior median values.
+        # Build a dictionary mapping grid_OID to Grid objects.
+        grid_dict = {grid.id: grid for grid in Grid.objects.all()}
+        
+        # Path to the CSV file (assumed at the repo's top level).
+        csv_file_path = os.path.join(settings.BASE_DIR, 'bird_data.csv')
+        
         latitudes, longitudes, medians = [], [], []
-        results = Results.objects.select_related('bird_speciesID', 'gridID').all()
-        for result in results:
-            grid = result.gridID
-            latitudes.append(grid.Grid_Lat_NAD83)
-            longitudes.append(grid.Grid_Long_NAD83)
-            medians.append(result.posterior_median)
+        
+        # Read the CSV file.
+        with open(csv_file_path, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                grid_oid = row.get('grid_OID')
+                if not grid_oid:
+                    continue
+                try:
+                    grid_oid_int = int(grid_oid)
+                except ValueError:
+                    continue  # Skip rows with invalid grid_OID
+                
+                grid = grid_dict.get(grid_oid_int)
+                if grid is None:
+                    continue  # Skip if grid not found in the database
+                
+                # Append grid coordinates from the DB.
+                latitudes.append(grid.Grid_Lat_NAD83)
+                longitudes.append(grid.Grid_Long_NAD83)
+                
+                # Append the posterior median value from the CSV.
+                try:
+                    medians.append(float(row.get('posterior_median', 0)))
+                except ValueError:
+                    medians.append(0)
+        
+        # Ensure we have data to process.
+        if not latitudes or not longitudes or not medians:
+            self.stdout.write(self.style.ERROR("No valid data found in CSV or matching grid records."))
+            return
 
         # Define raster grid parameters.
         min_lat, max_lat = min(latitudes), max(latitudes)
@@ -50,7 +82,9 @@ class Command(BaseCommand):
         for lat, lon, median in zip(latitudes, longitudes, medians):
             row = int((max_lat - lat) / pixel_size)
             col = int((lon - min_lon) / pixel_size)
-            raster_data[row, col] = median
+            # Ensure indices are within bounds.
+            if 0 <= row < nrows and 0 <= col < ncols:
+                raster_data[row, col] = median
 
         # Apply Gaussian smoothing (sigma=2.0) and boost intensity.
         raster_data = gaussian_filter(raster_data, sigma=2.0)
