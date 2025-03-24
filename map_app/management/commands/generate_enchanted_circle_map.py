@@ -1,16 +1,20 @@
 import os
+import csv
 import numpy as np
 import folium
 import rasterio
 import matplotlib.pyplot as plt
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from rasterio.transform import from_origin
 from scipy.ndimage import gaussian_filter  # For smoothing
 from matplotlib.colors import LinearSegmentedColormap
-from map_app.models import Species, Grid, Results
+from map_app.models import Grid
 
 class Command(BaseCommand):
-    help = 'Generate a Folium map with a heatmap raster overlay using a custom blue-white-orange colormap with a gradual gradient and interpolated data'
+    help = ('Generate a Folium map with a heatmap raster overlay using a custom '
+            'blue-white-orange colormap with a gradual gradient and interpolated data '
+            'sourced from a CSV (filtered values) and grid coordinates from the database.')
 
     def handle(self, *args, **kwargs):
         self.stdout.write(self.style.SUCCESS('Starting heatmap raster generation and Folium map creation...'))
@@ -32,19 +36,15 @@ class Command(BaseCommand):
         bounds = self.create_heatmap_raster(raster_tif)
 
         # Create a custom blue-white-orange colormap with a gradual gradient:
-        # 0.0 -> Blue (background)
-        # 0.3 -> Blue remains (low intensities)
-        # 0.5 -> White (edges)
-        # 0.7 -> Light orange (transition)
-        # 1.0 -> Orange (center, highest intensity)
         custom_cmap = LinearSegmentedColormap.from_list(
-            'custom_blue_white_orange', 
+            'custom_white_to_orange', 
             [
-                (0.0, '#1f78b4'),
-                (0.3, '#1f78b4'),
-                (0.5, '#ffffff'),
-                (0.7, '#ffbb78'),
-                (1.0, '#ff7f00')
+                (0.0, '#1f78b4'),   # Background blue (if needed)
+                (0.3, '#1f78b4'),   # Maintain blue at low intensities
+                (0.5, '#ffffff'),   # White (start of gradient)
+                (0.65, '#ffe5cc'),  # Lighter orange
+                (0.8, '#ffcc99'),   # Medium orange
+                (1.0, '#ff7f00')    # Deep orange (center, highest intensity)
             ]
         )
 
@@ -70,19 +70,48 @@ class Command(BaseCommand):
 
     def create_heatmap_raster(self, output_raster):
         """
-        Queries Results for grid coordinates and posterior median values,
-        builds a raster grid, applies smoothing and scaling,
-        and writes a GeoTIFF.
-        Returns the raster bounds.
+        Reads grid coordinates from the database and filtered posterior median values
+        from a CSV file, builds a raster grid, applies smoothing and scaling,
+        writes a GeoTIFF, and returns the raster bounds.
         """
+        # Build a dictionary mapping grid_OID to Grid objects.
+        grid_dict = {grid.id: grid for grid in Grid.objects.all()}
+        
+        # Path to the CSV file (assumed to be in the repo's top level).
+        csv_file_path = os.path.join(settings.BASE_DIR, 'bird_data.csv')
+        
         latitudes, longitudes, medians = [], [], []
-        results = Results.objects.select_related('bird_speciesID', 'gridID').all()
-        for result in results:
-            grid = result.gridID
-            latitudes.append(grid.Grid_Lat_NAD83)
-            longitudes.append(grid.Grid_Long_NAD83)
-            medians.append(result.posterior_median)
-
+        
+        # Read the CSV file.
+        with open(csv_file_path, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                grid_oid = row.get('grid_OID')
+                if not grid_oid:
+                    continue
+                try:
+                    grid_oid_int = int(grid_oid)
+                except ValueError:
+                    continue
+                
+                grid = grid_dict.get(grid_oid_int)
+                if grid is None:
+                    continue
+                
+                # Append grid coordinates from the DB.
+                latitudes.append(grid.Grid_Lat_NAD83)
+                longitudes.append(grid.Grid_Long_NAD83)
+                # Append the posterior median value from the CSV.
+                try:
+                    medians.append(float(row.get('posterior_median', 0)))
+                except ValueError:
+                    medians.append(0)
+                    
+        if not latitudes or not longitudes or not medians:
+            self.stdout.write(self.style.ERROR("No valid data found in CSV or matching grid records."))
+            return
+        
+        # Define raster grid parameters.
         min_lat, max_lat = min(latitudes), max(latitudes)
         min_lon, max_lon = min(longitudes), max(longitudes)
         pixel_size = 0.01  # Adjust as needed.
@@ -90,17 +119,20 @@ class Command(BaseCommand):
         ncols = int((max_lon - min_lon) / pixel_size) + 1
         raster_data = np.zeros((nrows, ncols), dtype=np.float32)
         transform = from_origin(min_lon, max_lat, pixel_size, pixel_size)
-
+        
+        # Populate the raster with the posterior median values.
         for lat, lon, median in zip(latitudes, longitudes, medians):
             row = int((max_lat - lat) / pixel_size)
             col = int((lon - min_lon) / pixel_size)
-            raster_data[row, col] = median
+            if 0 <= row < nrows and 0 <= col < ncols:
+                raster_data[row, col] = median
 
-        # Increase the sigma value for Gaussian smoothing to blend points into larger masses.
-        sigma_value = 4.0  # Adjust as needed for more interpolation.
+        # Increase the sigma value for Gaussian smoothing to blend points into larger masses
+        sigma_value = 5  # Adjust as needed for interpolation
         raster_data = gaussian_filter(raster_data, sigma=sigma_value)
         raster_data = raster_data * 20  # Adjust multiplier as needed.
 
+        # Write the smoothed/scaled raster to a GeoTIFF.
         with rasterio.open(
             output_raster, 'w', driver='GTiff',
             height=nrows, width=ncols, count=1, dtype='float32',
@@ -113,25 +145,18 @@ class Command(BaseCommand):
             return src.bounds
 
     def convert_geotiff_to_png(self, geotiff_path, png_path, cmap):
-        """
-        Reads a GeoTIFF, normalizes its data with clipping for high intensities,
-        and saves it as a PNG using the provided colormap.
-        Returns the raster bounds.
-        """
         with rasterio.open(geotiff_path) as src:
             data = src.read(1)
             bounds = src.bounds
 
-        # Normalize using the full data array.
-        if data.max() - data.min() > 0:
-            norm_data = (data - data.min()) / (data.max() - data.min())
-        else:
-            norm_data = data
-
-        # Clip at the 95th percentile to saturate high values.
-        thresh = np.percentile(norm_data, 95)
-        norm_data = np.clip(norm_data, 0, thresh)
-        norm_data = norm_data / thresh
+        # Use percentile-based normalization to enhance mid-range variance.
+        lower = np.percentile(data, 5)
+        upper = np.percentile(data, 95)
+        # Clip data to the 5th and 95th percentiles.
+        norm_data = np.clip(data, lower, upper)
+        # Scale to the range [0, 1]
+        norm_data = (norm_data - lower) / (upper - lower)
 
         plt.imsave(png_path, norm_data, cmap=cmap, vmin=0, vmax=1)
         return bounds
+
