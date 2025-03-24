@@ -1,4 +1,4 @@
-#Andy, Alyssa
+#Everyone
 
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseNotFound
@@ -34,12 +34,15 @@ def map(request):
         birdList = request.POST.getlist("birdSpecies")
 
         # create new csv file with current parameters
-        csvFile = getCSV(birdList)
+        getCSV(birdList)
 
         # update map 
-        # TODO: generate map on data present in users local cache (to prevent race conditions)
+        # TODO: generate map on data specifically for user based on user token (to prevent race conditions)
         call_command('create_heatmap')
         call_command('generate_enchanted_circle_map')
+
+        # have some sort of wait until command is done running????
+        
 
         # reload the page with updated map
         return render(request, map_page)
@@ -144,7 +147,7 @@ def instructions(request):
 #             Query to csv functions                #
 #####################################################
 
-#takes in list of bird species ids, returns CSV file with specified results
+#takes in list of bird species ids, creates and returns CSV file with specified results
 def getCSV(birdList):
     
     # Create the csv file name

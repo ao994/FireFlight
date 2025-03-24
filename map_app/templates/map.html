@@ -33,11 +33,11 @@
                 <!-- Currently: can choose any bird.
                         Goal: can choose only birds that are not protected. -->
                 <label class="list-group-item" for="{{bird.speciesID}}">
-                    <input class="form-check-input me-1" type="checkbox" name="birdSpecies" value="{{bird.speciesID}}">
+                    <input class="form-check-input me-1" type="checkbox" name="birdSpecies" value="{{bird.speciesID}}" checked>
                     {{bird.species}}
                 </label>  
             
-                {% endfor %}
+            {% endfor %}
 
             
             </div>
