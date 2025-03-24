@@ -5,3 +5,8 @@
 .DS_Store
 venv/
 __pycache__/
+bird_data.csv
+**/map_app/static/images/heatmap_raster.png
+**/map_app/static/images/heatmap_raster.tif
+**/map_app/templates/enchanted_circle_map.html
+
