@@ -6,12 +6,13 @@
 
 {% block body %}
 {% load static %}
+{% now "U" as ts %}
 
 <div class = "col-md mx-auto">
     
     <div class="row justify-content-center">
     <div class="col-8 d-flex justify-content-center">
-        <iframe width="850" height="500" src="/enchanted-circle-map" style="border: 1px solid black"></iframe>
+        <iframe width="850" height="500" src="/enchanted-circle-map/?v={{ ts }}" style="border: 1px solid black"></iframe>
     </div>
     
     <div class="col-2">
