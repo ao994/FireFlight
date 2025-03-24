@@ -21,11 +21,11 @@ def index(request):
 def map(request):
     #set page to load
     map_page = "map.html"
+    #gets all the birds
+    birds = Species.objects.all()
     
     #defines what happens when there is a GET request
     if request.method == "GET":
-        #gets all the birds
-        birds = Species.objects.all()
         return render(request, map_page, {'birds': birds})
     
     #defines what happens when the map is updated
@@ -42,10 +42,10 @@ def map(request):
         run_django_command("generate_enchanted_circle_map")
 
         # have some sort of wait until command is done running????
-        
+
 
         # reload the page with updated map
-        return render(request, map_page)
+        return render(request, map_page, {'birds': birds})
     
 def run_django_command(command):
     try:
@@ -62,7 +62,7 @@ def run_django_command(command):
 def download(request):
     
     #get csv Export file
-    csvExport = ""
+    csvExport = "bird_data.csv"
     
     #get date and time for export name
     curTime = datetime.datetime.now()
