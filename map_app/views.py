@@ -47,6 +47,7 @@ def map(request):
         # reload the page with updated map
         return render(request, map_page, {'birds': birds})
     
+
 @csp_exempt #currently not enforcing the set csp protection rules
 def download(request):
     

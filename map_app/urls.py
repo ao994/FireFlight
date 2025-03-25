@@ -8,4 +8,5 @@ urlpatterns = [
     path('enchanted-circle-map/', views.enchanted_circle_map, name='enchanted_circle_map'),
     path("<str:modelName>/query/", views.query, name="query"),
     path("instructions/", views.instructions, name="instructions"),
+    path("download/", views.download, name="download"),
 ]
