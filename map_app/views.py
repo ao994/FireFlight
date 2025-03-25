@@ -25,32 +25,33 @@ def map(request):
     # gets all the birds
     birds = Species.objects.all()
     
-    # defines what happens when there is a GET request
+
     if request.method == "GET":
-        # Add a timestamp to force refresh of static assets
-        timestamp = datetime.datetime.now().timestamp()
-        # also set embed to true, to signify the embedded map
-        return render(request, map_page, {'birds': birds, 'timestamp': timestamp, 'embed': True})
-    
-    # defines what happens when the map is updated
+            # Check if an update was recently applied.
+            if not request.session.get("filter_applied", False):
+                # Initial load: generate the full DB heatmap.
+                run_django_command("create_heatmap_all")
+                run_django_command("generate_enchanted_circle_map_all")
+            else:
+                # Clear the flag so future GETs will run the full DB commands again.
+                request.session["filter_applied"] = False
+
+            timestamp = datetime.datetime.now().timestamp()
+            return render(request, map_page, {'birds': birds, 'timestamp': timestamp, 'embed': True})
+        
     if request.method == "POST":
-        # get the list of bird requested
+        # Get the list of bird species requested.
         birdList = request.POST.getlist("birdSpecies")
-
-        # create new csv file with current parameters
+        # Create new CSV file with current parameters.
         getCSV(birdList)
-
-        # update map 
-        # TODO: generate map on data specifically for user based on user token (to prevent race conditions)
+        # Update map with filtered commands.
         run_django_command("create_heatmap")
         run_django_command("generate_enchanted_circle_map")
-
-        redirect('/map/')
-
+        # Set a flag so that the GET branch does not override the filtered map.
+        request.session["filter_applied"] = True
         time.sleep(10)
-
-        # redirect to force a fresh GET request
-        return redirect('/map/')  
+        # Redirect to force a fresh GET request.
+        return redirect('/map/')
 
 
 def run_django_command(command):
