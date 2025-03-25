@@ -1,10 +1,11 @@
 #Everyone
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseNotFound
 from csp.decorators import csp_exempt
-import csv, datetime
+import csv, datetime, time
 from django.core.management import call_command
+import subprocess, sys
 
 from .models import Species, Grid, Results
 
@@ -38,15 +39,27 @@ def map(request):
 
         # update map 
         # TODO: generate map on data specifically for user based on user token (to prevent race conditions)
-        call_command('create_heatmap')
-        call_command('generate_enchanted_circle_map')
+        run_django_command('create_heatmap')
+        run_django_command('generate_enchanted_circle_map')
 
-        # have some sort of wait until command is done running????
+        redirect('/map/')
+
+        time.sleep(10)
+
+        # redirect to force a fresh GET request
+        return redirect('/map/') 
 
 
-        # reload the page with updated map
-        return render(request, map_page, {'birds': birds})
-    
+def run_django_command(command):
+    try:
+        subprocess.run(
+            [sys.executable, 'manage.py'] + command.split(),
+            check=True,
+            capture_output=True,
+            text=True
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Command '{command}' failed: {e.stderr}")
 
 @csp_exempt #currently not enforcing the set csp protection rules
 def download(request):
