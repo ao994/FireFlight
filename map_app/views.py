@@ -29,7 +29,7 @@ def map(request):
     if request.method == "GET":
         # Add a timestamp to force refresh of static assets
         timestamp = datetime.datetime.now().timestamp()
-        return render(request, map_page, {'birds': birds, 'timestamp': timestamp})
+        return render(request, map_page, {'birds': birds, 'timestamp': timestamp, 'embed': True})
     
     # defines what happens when the map is updated
     if request.method == "POST":
@@ -81,7 +81,14 @@ def download(request):
 
 @csp_exempt  # currently not enforcing the set csp protection rules
 def enchanted_circle_map(request):
-    response = render(request, 'enchanted_circle_map.html')
+    embed = request.GET.get('embed')
+
+    # Pass 'fullscreen' to the context of the template
+    context = {
+        'embed': embed
+    }
+
+    response = render(request, 'enchanted_circle_map.html', context)
     # Force the browser not to cache this response
     response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response['Pragma'] = 'no-cache'
