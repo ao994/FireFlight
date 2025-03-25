@@ -10,6 +10,25 @@ from rasterio.transform import from_origin
 from scipy.ndimage import gaussian_filter  # For smoothing
 from matplotlib.colors import LinearSegmentedColormap
 from map_app.models import Grid
+from folium.elements import MacroElement
+from jinja2 import Template
+
+# Custom MacroElement to add a back button only if not in embed mode.
+class BackButton(MacroElement):
+    _template = Template("""
+        {% macro script(this, kwargs) %}
+            if (window.location.search.indexOf('embed') === -1) {
+                var backButton = L.control({position: 'topleft'});
+                backButton.onAdd = function(map) {
+                    var div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+                    div.innerHTML = '<a href="/map" title="Back" style="display: block; width: 50px; height: 50px; line-height: 50px; font-size: 24px; text-align: center; background: white; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px;">&#8592;</a>';
+                    return div;
+                };
+                backButton.addTo({{this._parent.get_name()}});
+            }
+        {% endmacro %}
+    """)
+
 
 class Command(BaseCommand):
     help = ('Generate a Folium map with a heatmap raster overlay using a custom '
@@ -65,6 +84,10 @@ class Command(BaseCommand):
             zindex=1,
         ).add_to(m)
         folium.LayerControl().add_to(m)
+        
+        # Add the back button control if not embedded.
+        m.add_child(BackButton())
+
         m.save(map_output)
         self.stdout.write(self.style.SUCCESS(f'Folium map generated and saved to: {map_output}'))
 
@@ -159,4 +182,3 @@ class Command(BaseCommand):
 
         plt.imsave(png_path, norm_data, cmap=cmap, vmin=0, vmax=1)
         return bounds
-
