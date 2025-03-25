@@ -21,8 +21,8 @@
                 Bird Species
             </button>
         
-            <form action="/map/" method="post" id="birdForm">
-                {% csrf_token %}
+        <form action="/map/" method="post" id="birdForm" name="birdForm">
+        {% csrf_token %}
         
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                     <div class="list-group" style="height: 30vh; overflow-y: scroll;">
@@ -56,9 +56,21 @@
 
         <!-- Currently: does nothing
              Goal: will export the data currently shown on the screen -->
-        <button class="btn btn-secondary mx-1">
-            Export Data
-        </button>
+        <form action="/download/" method="post" id="exportCSV">
+            {% csrf_token %}
+
+            <button class="btn btn-secondary mx-1" type="submit" name="exportCSVButton">
+                Export Data
+            </button>
+
+        </form>
+
+        
+
+            
+  
+
+
     </div>
     
 </div>
