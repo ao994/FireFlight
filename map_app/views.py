@@ -1,7 +1,7 @@
 #Everyone
 
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, FileResponse
 from csp.decorators import csp_exempt
 import csv, datetime, time
 from django.core.management import call_command
@@ -64,19 +64,14 @@ def run_django_command(command):
 @csp_exempt #currently not enforcing the set csp protection rules
 def download(request):
     
-    #get csv Export file
-    csvExport = "bird_data.csv"
-    
     #get date and time for export name
     curTime = datetime.datetime.now()
     timeStr = curTime.strftime("%m-%d-%Y_%H_%M")
 
-    #create http download
-    response = HttpResponse(
-        csvExport,
-        content_type="text/csv",
-        headers={"Content-Disposition": f'attachment; filename="bird_data_{timeStr}.csv"'},
-    )
+    #create file download
+    response = FileResponse(open("bird_data.csv", 'rb'))
+    response['Content-Type'] = "text/csv"
+    response['Content-Disposition'] = f'attachment; filename="bird_data_{timeStr}.csv"'
 
     return response
 
