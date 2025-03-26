@@ -9,3 +9,4 @@ bird_data.csv
 **/file_uploads/**
 **/raw_demos/**
 settings.py
+/mysite/settings.py
