@@ -25,28 +25,35 @@ class AddingDataTests(TestCase):
 class csvTests(TestCase):
     # create error-triggering files
     def setUp(self):
-        # create a file w/o one of the acceptable first fields
+        # create a file w/o any of the right headers
         with open("badFileHeader.csv", "w") as file:
             writer = csv.writer(file)
             writer.writerow(["this is", "NOT a valid", "csv"])
+            writer.writerow(["1", "American Crow", "AMCR"])
+
+        # create a file w/ just an acceptable first field
+        with open("incompleteFileHeader.csv", "w") as file:
+            writer = csv.writer(file)
+            writer.writerow(["ï»¿OID_"])
             writer.writerow(["1", "American Crow", "AMCR"])
         
         # create a Species file with bad data
         with open("badFileContentSpecies.csv", "w") as file:
             writer = csv.writer(file)
-            writer.writerow(["speciesID"])
+            writer.writerow(["speciesID","species","birdcode"])
             writer.writerow(["this can't be an int!"])
 
         # create a Grid file with bad data
         with open("badFileContentGrid.csv", "w") as file:
             writer = csv.writer(file)
-            writer.writerow(["ï»¿OID_"])
+            writer.writerow(["ï»¿OID_","Grid_ID","Grid_E_NAD83","Grid_N_NAD83","UTM_Zone","Grid_Lat_NAD83","Grid_Long_NAD83","BCR",
+                              "MgmtEntity","MgmtRegion","MgmtUnit","MgmtDistrict","County","State","PriorityLandscape","inPL"])
             writer.writerow(["this can't be an int!"])
         
         # create a Results file with bad data
         with open("badFileContentResults.csv", "w") as file:
             writer = csv.writer(file)
-            writer.writerow(["parameter"])
+            writer.writerow(["parameter","lbci","posterior.median","ubci"])
             writer.writerow(["this can't be an int!"])
 
         # create a non-csv file
@@ -57,6 +64,12 @@ class csvTests(TestCase):
     def test_bad_file_header(self):
         errText = StringIO()
         call_command("populate", "badFileHeader.csv", stderr=errText)
+        self.assertIn("Error: Invalid first field. File must be Species, Grid, or Results", errText.getvalue())
+
+    # test the file with an incomplete field name
+    def test_incomplete_field_header(self):
+        errText = StringIO()
+        call_command("populate", "incompleteFileHeader.csv", stderr=errText)
         self.assertIn("Error: Invalid first field. File must be Species, Grid, or Results", errText.getvalue())
 
     # test the Species file with bad data
