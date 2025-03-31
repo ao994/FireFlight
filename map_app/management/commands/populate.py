@@ -33,9 +33,9 @@ class Command(BaseCommand):
                     # skip field names
                     fields = next(csvreader)
 
-                    match fields[0]:
+                    match fields:
                         # if species file
-                        case "speciesID":
+                        case ["speciesID","species","birdcode"]:
                             # go through data line by line
                             for line in csvreader:
                                 try:
@@ -77,7 +77,10 @@ class Command(BaseCommand):
                                 self.stdout.write(self.style.SUCCESS(f'Database populated successfully from {filePath}!'))
                         
                         # if grid file
-                        case "ï»¿OID_" | "OID_" | "\ufeffOID_":
+                        case ["ï»¿OID_","Grid_ID","Grid_E_NAD83","Grid_N_NAD83","UTM_Zone","Grid_Lat_NAD83","Grid_Long_NAD83","BCR",
+                              "MgmtEntity","MgmtRegion","MgmtUnit","MgmtDistrict","County","State","PriorityLandscape","inPL"] | ["OID_","Grid_ID","Grid_E_NAD83","Grid_N_NAD83","UTM_Zone","Grid_Lat_NAD83","Grid_Long_NAD83","BCR",
+                              "MgmtEntity","MgmtRegion","MgmtUnit","MgmtDistrict","County","State","PriorityLandscape","inPL"] | ["\ufeffOID_","Grid_ID","Grid_E_NAD83","Grid_N_NAD83","UTM_Zone","Grid_Lat_NAD83","Grid_Long_NAD83","BCR",
+                              "MgmtEntity","MgmtRegion","MgmtUnit","MgmtDistrict","County","State","PriorityLandscape","inPL"]:
                             # go through data line by line
                             for line in csvreader:
                                 try:
@@ -174,7 +177,7 @@ class Command(BaseCommand):
                                 self.stdout.write(self.style.SUCCESS(f'Database populated successfully from {filePath}!'))
 
                         # if results file
-                        case "parameter":
+                        case ["parameter","lbci","posterior.median","ubci"]:
                             # go through data line by line
                             for line in csvreader:
                                 try:
