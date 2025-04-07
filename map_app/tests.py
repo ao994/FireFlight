@@ -1,10 +1,12 @@
 #Everyone
 
 from django.test import TestCase
+from django.core.management import call_command
 from .models import Species, Grid, Results
-
-
-# Create your tests here.
+import csv
+from io import StringIO
+        
+# tests for adding data
 class AddingDataTests(TestCase):
     def setUp(self):
         Species.objects.create(speciesID=0, species="Fake Bird", birdcode="BIRDCODE")
@@ -18,5 +20,84 @@ class AddingDataTests(TestCase):
         """
         checks that the bird and result were added correctly to the database.
         """
+
+# csv to db tests
+class csvTests(TestCase):
+    # create error-triggering files
+    def setUp(self):
+        # create a file w/o any of the right headers
+        with open("badFileHeader.csv", "w") as file:
+            writer = csv.writer(file)
+            writer.writerow(["this is", "NOT a valid", "csv"])
+            writer.writerow(["1", "American Crow", "AMCR"])
+
+        # create a file w/ just an acceptable first field
+        with open("incompleteFileHeader.csv", "w") as file:
+            writer = csv.writer(file)
+            writer.writerow(["ï»¿OID_"])
+            writer.writerow(["1", "American Crow", "AMCR"])
         
+        # create a Species file with bad data
+        with open("badFileContentSpecies.csv", "w") as file:
+            writer = csv.writer(file)
+            writer.writerow(["speciesID","species","birdcode"])
+            writer.writerow(["this can't be an int!"])
+
+        # create a Grid file with bad data
+        with open("badFileContentGrid.csv", "w") as file:
+            writer = csv.writer(file)
+            writer.writerow(["ï»¿OID_","Grid_ID","Grid_E_NAD83","Grid_N_NAD83","UTM_Zone","Grid_Lat_NAD83","Grid_Long_NAD83","BCR",
+                              "MgmtEntity","MgmtRegion","MgmtUnit","MgmtDistrict","County","State","PriorityLandscape","inPL"])
+            writer.writerow(["this can't be an int!"])
         
+        # create a Results file with bad data
+        with open("badFileContentResults.csv", "w") as file:
+            writer = csv.writer(file)
+            writer.writerow(["parameter","lbci","posterior.median","ubci"])
+            writer.writerow(["this can't be an int!"])
+
+        # create a non-csv file
+        with open("badFileType.py", "w") as file:
+            file.write("var = 10")
+
+    # test the file with an incorrect field name
+    def test_bad_file_header(self):
+        errText = StringIO()
+        call_command("populate", "badFileHeader.csv", stderr=errText)
+        self.assertIn("Error: Invalid first field. File must be Species, Grid, or Results", errText.getvalue())
+
+    # test the file with an incomplete field name
+    def test_incomplete_field_header(self):
+        errText = StringIO()
+        call_command("populate", "incompleteFileHeader.csv", stderr=errText)
+        self.assertIn("Error: Invalid first field. File must be Species, Grid, or Results", errText.getvalue())
+
+    # test the Species file with bad data
+    def test_bad_file_content_species(self):
+        errText = StringIO()
+        call_command("populate", "badFileContentSpecies.csv", stderr=errText)
+        self.assertIn("Error: Incorrect file value", errText.getvalue())
+
+    # test the Grid file with bad data
+    def test_bad_file_content_grid(self):
+        errText = StringIO()
+        call_command("populate", "badFileContentGrid.csv", stderr=errText)
+        self.assertIn("Error: Incorrect file value", errText.getvalue())
+    
+    # test the Results file with bad data
+    def test_bad_file_content_results(self):
+        errText = StringIO()
+        call_command("populate", "badFileContentResults.csv", stderr=errText)
+        self.assertIn("Error: Incorrect file value", errText.getvalue())
+
+    # test the incorrect file type
+    def test_bad_file_type(self):
+        errText = StringIO()
+        call_command("populate", "badFileType.py", stderr=errText)
+        self.assertIn("Error: Wrong file type. Must be csv", errText.getvalue())
+
+    # test inputting a non-file
+    def test_invalid_file_type(self):
+        errText = StringIO()
+        call_command("populate", "abcdefghijklmnopqrstuvwxyz", stderr=errText)
+        self.assertIn("Error: File inaccessible", errText.getvalue())
