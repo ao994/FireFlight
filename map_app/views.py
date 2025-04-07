@@ -54,6 +54,10 @@ def map(request):
         return redirect('/map/')
 
 
+#add search method
+
+
+
 def run_django_command(command):
     try:
         subprocess.run(
