@@ -6,75 +6,75 @@
 {% block body %}
 {% load static %}
 
-    {% if not waiting %}
-        <div class="col-md mx-auto">
-            
-            <div class="row justify-content-center">
-                <div class="col-8 d-flex justify-content-center">
-                    <!-- Using the passed timestamp to bust cache on the iframe source -->
-                    <iframe width="850" height="500" src="/enchanted-circle-map/?v={{ timestamp }}&embed={{ embed }}" style="border: 1px solid black"></iframe>
-                </div>
-            
-                <div class="col-2">
-                    <!-- Currently: shows drop down of all bird species
-                        Goal: will actively select birds for display/export -->
-                    <button class="btn btn-secondary dropdown-toggle mx-1" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" data-bs-auto-close="false" aria-expanded="false">
-                        Bird Species
-                    </button>
-                
-                <form action="/map/" method="post" id="birdForm" name="birdForm">
-                {% csrf_token %}
-                
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <div class="list-group" style="height: 30vh; overflow-y: scroll;">
-                                {% for bird in birds %}
-                                    <!-- Currently: can choose any bird.
-                                        Goal: can choose only birds that are not protected. -->
-                                    <label class="list-group-item" for="{{ bird.speciesID }}">
-                                        <input class="form-check-input me-1" type="checkbox" name="birdSpecies" value="{{ bird.speciesID }}" checked>
-                                        {{ bird.species }}
-                                    </label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <br/>
-
-            <div class="d-flex justify-content-center">
-                <!-- Navigates to full map page -->
-                <a href="/enchanted-circle-map" class="btn btn-secondary mx-1">
-                    View Larger Map
-                </a>
-
-                <!-- Currently: Navigates to current page, refreshing and resetting everything
-                    Goal: Change to "update", and will apply chosen options -->
-                <button class="btn btn-secondary mx-1" form="birdForm" type="submit">
-                    Update
-                </button>
-
-                <!-- Currently: does nothing
-                    Goal: will export the data currently shown on the screen -->
-                <form action="/download/" method="post" id="exportCSV">
-                    {% csrf_token %}
-
-                    <button class="btn btn-secondary mx-1" type="submit" name="exportCSVButton">
-                        Export Data
-                    </button>
-
-                </form>
-
-                
-
-                    
+{% if not waiting %}
+<div class="col-md mx-auto">
+    
+    <!-- Map and bird selection -->
+    <div class="row justify-content-center">
         
-
-
-            </div>
-            
+        <div class="col-8 d-flex justify-content-center">
+            <!-- Using the passed timestamp to bust cache on the iframe source -->
+            <iframe width="850" height="500" src="/enchanted-circle-map/?v={{ timestamp }}&embed={{ embed }}" style="border: 1px solid black"></iframe>
         </div>
-    {% endif %}
+    
+        <div class="col-3">
+            
+            <!-- Search bar and search button -->
+            <div class = "container-fluid d-flex justify-content-center">
+                <input type="text" id="searchInput" onkeyup="liveSearch()" placeholder="Search">
+            </div>
+
+            <div class="form-floating text-start">
+            <!-- bird checklist -->
+            <form action="/map/" method="post" id="birdForm" name="birdForm">
+                {% csrf_token %}             
+                    <div class="list-group" style="height: 60vh; overflow-y: scroll;" id="birdList">
+                        {% for bird in birds %}
+                            <!-- Currently: can choose any bird.
+                                Goal: can choose only birds that are not protected. -->
+                            <label class="list-group-item" for="{{ bird.speciesID }}" name="birdItem">
+                                <input class="form-check-input me-1" type="checkbox" name="birdSpecies" value="{{ bird.speciesID }}" checked>
+                                {{ bird.species }}
+                            </label>
+                        {% endfor %}
+                    </div>
+            </form>
+            </div><!-- end floating form -->
+        
+           
+        
+        </div> <!-- end dropdown div -->
+    </div> <!-- end map & bird species div -->
+
+    <br/>
+
+    <!-- Buttons below map -->
+    <div class="d-flex justify-content-center">
+        <!-- Navigates to full map page -->
+        <a href="/enchanted-circle-map" class="btn btn-secondary mx-1">
+            View Larger Map
+        </a>
+
+        <!-- will apply chosen options from bird selection
+         Move potentially?? -->
+        <button class="btn btn-secondary mx-1" form="birdForm" type="submit">
+            Update
+        </button>
+
+        <!-- exports the data currently shown on the screen -->
+        <form action="/download/" method="post" id="exportCSV">
+            {% csrf_token %}
+            <button class="btn btn-secondary mx-1" type="submit" name="exportCSVButton">
+                Export Data
+            </button>
+
+        </form>
+
+    </div> <!-- end buttons div -->
+    
+</div> <!-- end outer div -->
+{% endif %}
+
+<script src="{% static 'search_function.js' %}"></script>
 
 {% endblock %}
