@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from rasterio.transform import from_origin
-from scipy.ndimage import gaussian_filter  # For smoothing
+from scipy.ndimage import gaussian_filter
 from matplotlib.colors import LinearSegmentedColormap
 from map_app.models import Grid
 from folium.elements import MacroElement
 from jinja2 import Template
 
-# Custom MacroElement to add a back button only if not in embed mode.
+# Custom MacroElement to add a back button only if not in embed mode
 class BackButton(MacroElement):
     _template = Template("""
         {% macro script(this, kwargs) %}
@@ -38,7 +38,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.stdout.write(self.style.SUCCESS('Starting heatmap raster generation and Folium map creation...'))
 
-        # Ensure directories exist.
+        # Ensure directories exist
         static_dir = os.path.join('map_app', 'static', 'images')
         if not os.path.exists(static_dir):
             os.makedirs(static_dir)
@@ -46,12 +46,12 @@ class Command(BaseCommand):
         if not os.path.exists(template_dir):
             os.makedirs(template_dir)
         
-        # Define file paths.
+        # Define file paths
         raster_tif = os.path.join(static_dir, 'heatmap_raster.tif')
         raster_png = os.path.join(static_dir, 'heatmap_raster.png')
         map_output = os.path.join(template_dir, 'enchanted_circle_map.html')
 
-        # Generate the heatmap raster GeoTIFF.
+        # Generate the heatmap raster GeoTIFF
         bounds = self.create_heatmap_raster(raster_tif)
 
         # Create a custom blue-white-orange colormap with a gradual gradient:
@@ -67,12 +67,12 @@ class Command(BaseCommand):
             ]
         )
 
-        # Convert the GeoTIFF to PNG using the custom colormap.
+        # Convert the GeoTIFF to PNG using the custom colormap
         bounds = self.convert_geotiff_to_png(raster_tif, raster_png, custom_cmap)
         overlay_bounds = [[bounds.bottom, bounds.left], [bounds.top, bounds.right]]
         self.stdout.write(self.style.SUCCESS(f"Raster bounds: {overlay_bounds}"))
 
-        # Create a Folium map with the PNG overlay.
+        # Create a Folium map with the PNG overlay
         m = folium.Map(location=[36.5, -105.5], zoom_start=9)
         folium.raster_layers.ImageOverlay(
             image=raster_png,
@@ -85,8 +85,30 @@ class Command(BaseCommand):
         ).add_to(m)
         folium.LayerControl().add_to(m)
         
-        # Add the back button control if not embedded.
+        # Add the back button control if not embedded
         m.add_child(BackButton())
+
+        # Add a gradient legend
+        legend_html = """
+        <div style="
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 200px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 2px solid grey;
+            z-index: 9999;
+            font-size: 14px;
+            padding: 10px;">
+            <b>Bird Species Presence</b><br>
+            <div style="margin-top: 8px; height: 20px; background: linear-gradient(to right, #1f78b4, #ffffff, #ff7f00);"></div>
+            <div style="display: flex; justify-content: space-between;">
+                <span>Lowest</span>
+                <span>Highest</span>
+            </div>
+        </div>
+        """
+        m.get_root().html.add_child(folium.Element(legend_html))
 
         m.save(map_output)
         self.stdout.write(self.style.SUCCESS(f'Folium map generated and saved to: {map_output}'))
@@ -97,15 +119,15 @@ class Command(BaseCommand):
         from a CSV file, builds a raster grid, applies smoothing and scaling,
         writes a GeoTIFF, and returns the raster bounds.
         """
-        # Build a dictionary mapping grid_OID to Grid objects.
+        # Build a dictionary mapping grid_OID to Grid objects
         grid_dict = {grid.id: grid for grid in Grid.objects.all()}
         
-        # Path to the CSV file (assumed to be in the repo's top level).
+        # Path to the CSV file (assumed to be in the repo's top level)
         csv_file_path = os.path.join(settings.BASE_DIR, 'bird_data.csv')
         
         latitudes, longitudes, medians = [], [], []
         
-        # Read the CSV file.
+        # Read the CSV file
         with open(csv_file_path, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
@@ -121,10 +143,10 @@ class Command(BaseCommand):
                 if grid is None:
                     continue
                 
-                # Append grid coordinates from the DB.
+                # Append grid coordinates from the DB
                 latitudes.append(grid.Grid_Lat_NAD83)
                 longitudes.append(grid.Grid_Long_NAD83)
-                # Append the posterior median value from the CSV.
+                # Append the posterior median value from the CSV
                 try:
                     medians.append(float(row.get('posterior_median', 0)))
                 except ValueError:
@@ -134,16 +156,16 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR("No valid data found in CSV or matching grid records."))
             return
         
-        # Define raster grid parameters.
+        # Define raster grid parameters
         min_lat, max_lat = min(latitudes), max(latitudes)
         min_lon, max_lon = min(longitudes), max(longitudes)
-        pixel_size = 0.01  # Adjust as needed.
+        pixel_size = 0.01 
         nrows = int((max_lat - min_lat) / pixel_size) + 1
         ncols = int((max_lon - min_lon) / pixel_size) + 1
         raster_data = np.zeros((nrows, ncols), dtype=np.float32)
         transform = from_origin(min_lon, max_lat, pixel_size, pixel_size)
         
-        # Populate the raster with the posterior median values.
+        # Populate the raster with the posterior median values
         for lat, lon, median in zip(latitudes, longitudes, medians):
             row = int((max_lat - lat) / pixel_size)
             col = int((lon - min_lon) / pixel_size)
@@ -153,9 +175,9 @@ class Command(BaseCommand):
         # Increase the sigma value for Gaussian smoothing to blend points into larger masses
         sigma_value = 5  # Adjust as needed for interpolation
         raster_data = gaussian_filter(raster_data, sigma=sigma_value)
-        raster_data = raster_data * 20  # Adjust multiplier as needed.
+        raster_data = raster_data * 20  # Adjust multiplier as needed
 
-        # Write the smoothed/scaled raster to a GeoTIFF.
+        # Write the smoothed/scaled raster to a GeoTIFF
         with rasterio.open(
             output_raster, 'w', driver='GTiff',
             height=nrows, width=ncols, count=1, dtype='float32',
@@ -172,10 +194,10 @@ class Command(BaseCommand):
             data = src.read(1)
             bounds = src.bounds
 
-        # Use percentile-based normalization to enhance mid-range variance.
+        # Use percentile-based normalization to enhance mid-range variance
         lower = np.percentile(data, 5)
         upper = np.percentile(data, 95)
-        # Clip data to the 5th and 95th percentiles.
+        # Clip data to the 5th and 95th percentiles
         norm_data = np.clip(data, lower, upper)
         # Scale to the range [0, 1]
         norm_data = (norm_data - lower) / (upper - lower)
