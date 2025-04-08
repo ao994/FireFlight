@@ -20,7 +20,7 @@ nav{
 h1{
     text-align: center;
     color:crimson;
-    background: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.85);
 }
 
 p{
@@ -28,7 +28,7 @@ p{
     margin: 5% auto;
     width: 700px; 
     font-size: larger;
-    background: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.85);
     border-radius: 2px;      
 }
 
@@ -46,4 +46,32 @@ iframe{
     justify-content: center;
     align-items: center;
     text-align: center;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(255, 255, 255, 0.8); /* Optional overlay */
+    z-index: 9999; /* Ensure it's on top */
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
