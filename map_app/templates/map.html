@@ -6,6 +6,8 @@
 {% block body %}
 {% load static %}
 
+<script src="{% static 'search_function.js' %}"></script>
+
 {% if not waiting %}
 <div class="col-md mx-auto">
     
@@ -24,18 +26,25 @@
                 <input class="w-100 rounded" type="text" id="searchInput" onkeyup="liveSearch()" placeholder="Search birds...">
             </div>
 
+            <!-- select/deselect all buttons -->
+            <div class="btn-group w-100" role="group" aria-label="select all and deselect all buttons">
+                <input type="button" class="btn border btn-secondary" value ="Select All" name="select-all" onClick="selectAllBirds()">
+                <input type="button" class="btn border btn-secondary" value ="Deselect All" name="deselect-all" onClick="deselectAllBirds()">
+            </div>
+            
+
             <div class="form-floating text-start">
             <!-- bird checklist -->
             <form action="/map/" method="post" id="birdForm" name="birdForm">
                 {% csrf_token %}             
                     <div class="list-group" style="height: 60vh; overflow-y: scroll;" id="birdList">
                         {% for bird in birds %}
-                            <!-- Currently: can choose any bird.
-                                Goal: can choose only birds that are not protected. -->
-                            <label class="list-group-item" for="{{ bird.speciesID }}" name="birdItem">
-                                <input class="form-check-input me-1" type="checkbox" name="birdSpecies" value="{{ bird.speciesID }}" checked>
+                        <div class="list-group-item">    
+                            <input class="form-check-input me-1" type="checkbox" name="birdSpecies" value="{{ bird.speciesID }}" id="{{ bird.speciesID }}">
+                            <label class="" for="{{ bird.speciesID }}" name="birdItem">
                                 {{ bird.species }}
                             </label>
+                        </div>
                         {% endfor %}
                     </div>
             </form>
@@ -75,6 +84,6 @@
 </div> <!-- end outer div -->
 {% endif %}
 
-<script src="{% static 'search_function.js' %}"></script>
+
 
 {% endblock %}
