@@ -65,11 +65,11 @@ class Command(BaseCommand):
             ]
         )
 
-        # Convert the GeoTIFF to PNG using the custom colormap
-        bounds = self.convert_geotiff_to_png(raster_tif, raster_png, custom_cmap)
+        # Convert the GeoTIFF to PNG using the custom colormap and capture the data range.
+        bounds, data_min, data_max = self.convert_geotiff_to_png(raster_tif, raster_png, custom_cmap)
         overlay_bounds = [[bounds.bottom, bounds.left], [bounds.top, bounds.right]]
         self.stdout.write(self.style.SUCCESS(f"Raster bounds: {overlay_bounds}"))
-
+        
         # Create a Folium map with the PNG overlay
         m = folium.Map(location=[36.5, -105.5], zoom_start=9)
         folium.raster_layers.ImageOverlay(
@@ -86,7 +86,7 @@ class Command(BaseCommand):
         # Add the back button control if not embedded
         m.add_child(BackButton())
 
-        # Add a gradient legend
+        # Add a gradient legend with dynamic data values
         legend_html = """
         <div style="
             position: absolute;
@@ -98,14 +98,25 @@ class Command(BaseCommand):
             z-index: 9999;
             font-size: 14px;
             padding: 10px;">
-            <b>Bird Species Presence</b><br>
-            <div style="margin-top: 8px; height: 20px; background: linear-gradient(to right, #1f78b4, #ffffff, #ff7f00);"></div>
+            <div style="text-align: center; font-size: 12px; margin-bottom: 0;">
+                <b>Bird Species</b><br>
+                <b>Probablity of Occupancy</b>
+            </div>
+            <div style="height: 20px; background: linear-gradient(to right, #1f78b4, #ffffff, #ff7f00);"></div>
             <div style="display: flex; justify-content: space-between;">
-                <span>Lowest</span>
-                <span>Highest</span>
+                <div style="text-align: center;">
+                    <div>Lowest</div>
+                    <div>0</div>
+                </div>
+                <div style="text-align: center;">
+                    <div>Highest</div>
+                    <div>1.0</div>
+                </div>
             </div>
         </div>
         """
+
+        # Add the legend to the map
         m.get_root().html.add_child(folium.Element(legend_html))
 
         m.save(map_output)
@@ -165,7 +176,8 @@ class Command(BaseCommand):
     def convert_geotiff_to_png(self, geotiff_path, png_path, cmap):
         """
         Reads the GeoTIFF, normalizes the data using percentile-based clipping (5th and 95th percentiles),
-        saves as a PNG using the provided colormap, and returns the raster bounds.
+        saves as a PNG using the provided colormap, and returns the raster bounds along with the minimum
+        and maximum data values used for normalization.
         """
         with rasterio.open(geotiff_path) as src:
             data = src.read(1)
@@ -177,4 +189,4 @@ class Command(BaseCommand):
         norm_data = (norm_data - lower) / (upper - lower)
 
         plt.imsave(png_path, norm_data, cmap=cmap, vmin=0, vmax=1)
-        return bounds
+        return bounds, lower, upper
