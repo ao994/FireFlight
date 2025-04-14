@@ -88,7 +88,7 @@ class Command(BaseCommand):
         # Add the back button control if not embedded
         m.add_child(BackButton())
 
-        # Add a gradient legend
+        # Add a gradient legend with dynamic data values
         legend_html = """
         <div style="
             position: absolute;
@@ -100,14 +100,25 @@ class Command(BaseCommand):
             z-index: 9999;
             font-size: 14px;
             padding: 10px;">
-            <b>Bird Species Presence</b><br>
-            <div style="margin-top: 8px; height: 20px; background: linear-gradient(to right, #1f78b4, #ffffff, #ff7f00);"></div>
+            <div style="text-align: center; font-size: 12px; margin-bottom: 0;">
+                <b>Bird Species</b><br>
+                <b>Probablity of Occupancy</b>
+            </div>
+            <div style="height: 20px; background: linear-gradient(to right, #1f78b4, #ffffff, #ff7f00);"></div>
             <div style="display: flex; justify-content: space-between;">
-                <span>Lowest</span>
-                <span>Highest</span>
+                <div style="text-align: center;">
+                    <div>Lowest</div>
+                    <div>0</div>
+                </div>
+                <div style="text-align: center;">
+                    <div>Highest</div>
+                    <div>1.0</div>
+                </div>
             </div>
         </div>
         """
+
+        # Add the legend to the map
         m.get_root().html.add_child(folium.Element(legend_html))
 
         m.save(map_output)
