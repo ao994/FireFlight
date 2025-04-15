@@ -5,6 +5,7 @@ from django.core.management import call_command
 from .models import Species, Grid, Results
 import csv
 from io import StringIO
+import os
         
 # tests for adding data
 class AddingDataTests(TestCase):
@@ -23,8 +24,13 @@ class AddingDataTests(TestCase):
 
 # csv to db tests
 class csvTests(TestCase):
+    
     # create error-triggering files
     def setUp(self):
+        # save test file names
+        self.fileNames = ["badFileHeader.csv", "incompleteFileHeader.csv", "badFileContentSpecies.csv", "badFileContentGrid.csv",
+                      "badFileContentResults.csv", "badFileType.py"]
+        
         # create a file w/o any of the right headers
         with open("badFileHeader.csv", "w") as file:
             writer = csv.writer(file)
@@ -101,3 +107,12 @@ class csvTests(TestCase):
         errText = StringIO()
         call_command("populate", "abcdefghijklmnopqrstuvwxyz", stderr=errText)
         self.assertIn("Error: File inaccessible", errText.getvalue())
+
+    # tear down function
+    def tearDown(self):
+        # for every file in the list of test files
+        for file in self.fileNames:
+            # if it exists
+            if os.path.exists(file):
+                # delete it
+                os.remove(file)
